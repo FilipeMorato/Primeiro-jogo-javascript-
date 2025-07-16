@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Lutinha</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100svh;
+      background-color: white;
+    }
+
+    #canvas-container {
+      position: relative;
+      overflow: hidden;
+    }
+
+    canvas {
+      background-color: black;
+      display: block;
+      transform-origin: top left;
+      image-rendering: crisp-edges;
+      image-rendering: pixelated;
+      z-index: 1;
+    }
+    .arrow {
+      all: unset;
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background-size: cover;
+    }
+  
+    #clickWarning{
+     display: flex;
+     position: absolute;
+     background-color: black;
+     z-index: 2;
+     color: white; 
+     width: 100%;
+     height: 100%;      
+     justify-content: center;
+     align-items: center; 
+     opacity: 0.5; 
+    }
+    
+    #up {
+      background-image: url('arrow.png');
+      top: 36%;
+      left: 5%;
+    }
+    #right{
+      background-image: url('arrow.png');
+      top: 47%;
+      left: 10%;
+    }
+    #down {
+      background-image: url('arrow.png');
+      top: 59%;
+      left: 5%;
+    }
+    #left {
+      background-image: url('arrow.png');
+      top: 47%;
+      left: 1%;
+    }
+    
+    #punch {
+      background-image: url('punch.png');
+      top: 52%;
+      left: 76%;
+    }
+    #kick {
+      background-image: url('kick.png');
+      top: 52%;
+      left: 86%;
+    }
+    
+  </style>
+  <script type= "module" src= "Main.js"></script>
+</head>
+<body>
+  <div id="canvas-container">
+    
+    <div id="clickWarning">
+      <h1>Clique para prosseguir meu nobre</h1>     
+    </div>
+    
+    <canvas id="canvas" width="960" height="540"></canvas>
+  </div>
+   <div class="arrow" id="up"></div>
+   <div class="arrow" id="right"></div>
+   <div class="arrow" id="down"></div>
+   <div class="arrow" id="left"></div>
+   <div class="arrow" id="punch"></div>
+   <div class="arrow" id="kick"></div>
+   
+  <script>
+    const canvas = document.getElementById('canvas');
+    const container = document.getElementById('canvas-container');
+    const buttons = document.getElementsByClassName("arrow")
+    
+    const originalWidth = canvas.width;
+    const originalHeight = canvas.height;
+
+    function resizeCanvas() {
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+
+      // Calcula a escala com base no menor fator de escala para largura e altura
+      const scaleWidth = windowWidth / originalWidth;
+      const scaleHeight = windowHeight / originalHeight;
+      const scale = Math.min(scaleWidth, scaleHeight);
+
+      // Aplica a escala ao canvas
+      canvas.style.transform = `scale(${scale})`;
+      container.style.width = `${originalWidth * scale}px`;
+      container.style.height = `${originalHeight * scale}px`;
+      
+      for (let button of buttons){
+        button.style.width = `${140 * scale}px`
+        button.style.height = `${140 * scale}px`
+        button.style.transformOrigin = "center"
+      }
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+  </script>
+</body>
+</html>
