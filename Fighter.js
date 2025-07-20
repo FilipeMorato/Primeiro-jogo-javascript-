@@ -4,6 +4,7 @@ import * as soundFuncs from "./SoundHandler.js"
 import { punchSounds, woosh } from "./musics.js"
 import { airSprites } from "./sprites.js"
 import { frameTime } from "./Main.js"
+import { setFighterInstanceSprites } from "./CpuSpawner.js"
 
 export function playRandomPunchSound(){
   const random = Math.floor(Math.random() * 2)
@@ -11,8 +12,9 @@ export function playRandomPunchSound(){
 }
 
 export class BaseFighter {
-  constructor(context, x, y, addMagic){
+  constructor(context, x, y, addMagic, name){
   this.context = context
+  this.name = name  
   this.positionX = x
   this.positionY = y
   this.velocityX = 0
@@ -43,8 +45,8 @@ export class BaseFighter {
   }
 
 export class VsFighter extends BaseFighter {
-  constructor(context, x, y, addMagic){
-    super(context, x, y, addMagic)
+  constructor(context, x, y, addMagic, name){
+    super(context, x, y, addMagic, name)
     this.idleSprite = {}
     this.kick1Sprite = {}
     this.kick2Sprite = {}
@@ -78,6 +80,7 @@ export class VsFighter extends BaseFighter {
       jump: [[this.jumpSprite], this.jumpInit, this.jumpUpdate],
       gilete: [[this.kick1Sprite], this.gileteInit, this.gileteUpdate]
     }
+    setFighterInstanceSprites(this)
     this.currentState = this.states.idle
   }
   
@@ -272,12 +275,12 @@ hitClash(opponent, atkState){
   hurtFallUpdate = () => {
    if (this.randomDirection < 0){
      if (this.angle > this.randomDirection){
-       this.angle -= 0.1
+       this.angle -= 4 * frameTime.secondsPassed
      }
    }
    else {
      if (this.angle < this.randomDirection){
-       this.angle += 0.1
+       this.angle += 4 * frameTime.secondsPassed
      }
    }
    if (this.lost){ return }
@@ -381,7 +384,7 @@ hitClash(opponent, atkState){
   
   updateSlide(frameTime){
    if (Math.abs(this.slide) > 3200){
-  this.slide /= 1.2
+  this.slide /= 60 * frameTime.secondsPassed
   this.velocityX = this.slide * frameTime.secondsPassed
    }
    
@@ -553,7 +556,7 @@ hitClash(opponent, atkState){
     }
   }
   
-  updateStageLimits(){
+  updateStageLimits(frameTime){
     this.updatePush()
     
     if (this.positionX > 920){
@@ -563,15 +566,11 @@ hitClash(opponent, atkState){
       this.positionX = 40
     }
     if (this.notOnGround()){
-    this.velocityY += 70
+    this.velocityY += 4100 * frameTime.secondsPassed
     }
     if (this.positionY > this.groundPosition){
       this.positionY = this.groundPosition
     }
-  }
-  
-  updateBotBehaviour(){
-    return
   }
   
   update(frameTime){
@@ -597,7 +596,11 @@ hitClash(opponent, atkState){
     
     this.updateSlide(frameTime)
     this.updateAnimation(frameTime)
-    this.updateStageLimits()
+    this.updateStageLimits(frameTime)
+    
+    if (this.shouldOffset == true){
+      this.offsetValue = Math.abs(Math.floor(this.velocityX / 1.5))
+    }
     
     //chama a update do state atual se esse state o tiver
     if (this.currentState[2]){
@@ -644,11 +647,12 @@ hitClash(opponent, atkState){
 }
 
 export class SingleFighter extends VsFighter{
-  constructor(context, x, y, addMagic){
-  super(context, x, y, addMagic)
+  constructor(context, x, y, addMagic, name){
+  super(context, x, y, addMagic, name)
   this.opponent = []
   this.score = 0
   this.shouldOffset = false
+  this.offsetValue = 0  
   }
   
   notLookingToOpponent(opponent){
@@ -657,7 +661,7 @@ export class SingleFighter extends VsFighter{
   else { return false }
 }
   
-  updateStageLimits(){
+  updateStageLimits(frameTime){
     this.updatePush()
     
     if (this.positionX > 400){
@@ -671,7 +675,7 @@ export class SingleFighter extends VsFighter{
       this.positionX = 40
     }
     if (this.notOnGround()){
-    this.velocityY += 70
+    this.velocityY += 4100 * frameTime.secondsPassed
     }
     if (this.positionY > this.groundPosition){
       this.positionY = this.groundPosition
@@ -818,13 +822,17 @@ export class SingleFighter extends VsFighter{
 }
 
 export class VsModeBot extends VsFighter{
-  constructor(context, x, y, addMagic, hardMode){
-  super(context, x, y, addMagic)
+  constructor(context, x, y, addMagic, name, hardMode){
+  super(context, x, y, addMagic, name)
     this.hardMode = hardMode
     this.distanceXfromPlayer = 0
     this.distanceYfromPlayer = 0
     this.turnAroundTimer = Math.random()/ 3.3
     this.lookingToOpponent = true
+    
+    this.states.idle[2] = this.idleUpdate
+    this.states.walk[2] = this.walkUpdate
+    this.states.jump[2] = this.jumpUpdate
     
     this.botFightStates = {
      dashDanceFooling: this.dashDance,
@@ -906,7 +914,7 @@ export class VsModeBot extends VsFighter{
   
   rush = () => {
     const waitChance = Math.floor(Math.random() * 500)
-    if (waitChance < 30) { 
+    if (waitChance < 50) { 
       this.changeState(this.states.idle)
       this.changeFightState(this.botFightStates.waitingShortly)
     }
@@ -1006,4 +1014,3 @@ export class VsModeBot extends VsFighter{
     
   }
 }
-    
