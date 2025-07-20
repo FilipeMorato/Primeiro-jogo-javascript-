@@ -79,12 +79,12 @@ export class Shooter extends BaseFighter{
   hurtFallUpdate = () => {
    if (this.randomDirection < 0){
      if (this.angle > this.randomDirection){
-       this.angle -= 0.1
+       this.angle -= 4 * frameTime.secondsPassed
      }
    }
    else {
      if (this.angle < this.randomDirection){
-       this.angle += 0.1
+       this.angle += 4 * frameTime.secondsPassed
      }
    }
     if (performance.now() > this.hurtTimer + this.fallDuration){
@@ -128,7 +128,7 @@ export class Shooter extends BaseFighter{
   
   updateSlide(frameTime){
    if (Math.abs(this.slide) > 3200){
-  this.slide /= 1.2
+  this.slide /= 60 * frameTime.secondsPassed
   this.velocityX = this.slide * frameTime.secondsPassed
    }
    
@@ -167,7 +167,7 @@ export class Shooter extends BaseFighter{
     }
     
     if (this.opponent.shouldOffset && this.opponent.velocityX > 0){
-    this.positionX += Math.floor((this.velocityX - 300) * frameTime.secondsPassed)
+    this.positionX += Math.floor((this.velocityX - this.opponent.offsetValue) * frameTime.secondsPassed)
     }
     else {
       this.positionX += Math.floor(this.velocityX * frameTime.secondsPassed)
