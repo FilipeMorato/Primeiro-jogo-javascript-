@@ -10,6 +10,7 @@ import { PunchCpu, Kicker } from "./CPU.js"
 import { Shooter, Giant } from "./CPU2.js"
 import { getRandomPuncherSprites, getRandomKickerSprites, getRandomShooterSprites, getRandomGiantSprites } from "./CpuSpawner.js"
 import { globalState } from "./settings.js"
+import  { menuBtn } from "./menuReturnButton.js"
 
 export class ActionScene {
   constructor (context, canvas){
@@ -24,6 +25,7 @@ export class ActionScene {
     this.entities = []
     
     soundFuncs.playSound(battleMusics[this.musicRandomizer], 1, { volume: 0.5, loop: true })
+    menuBtn.style.display = "none"
   }
   addMagic(direction, x, y, opponent){
     this.entities.push(new Magic(direction, x, y, opponent))
