@@ -37,5 +37,7 @@ export const globalState = {
   currentMode: "",
   player1: null,
   player2: null,
-  hardVsBot: false
+  hardVsBot: false,
+  p1fighterName: "",
+  p2fighterName: ""
 }
