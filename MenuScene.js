@@ -45,6 +45,7 @@ this.handleClick = (event) => {
       this.canvas.addEventListener("click", this.handleClick)
 
 soundFuncs.playSound(this.menumusic, 1, { volume: 0.6, loop: true })
+    menuBtn.style.display = "none"
     }
     
 loadFireFrames() {
@@ -92,7 +93,6 @@ drawPostersFighters(){
 }
 
 cleanClassInstance(){
-  menuBtn.style.display = "none"
   this.context.globalAlpha = 1
   this.context = null
   this.canvas.removeEventListener("click", this.handleClick)
