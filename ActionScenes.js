@@ -1,4 +1,5 @@
 import * as soundFuncs from "./SoundHandler.js"
+import * as input from "./inputs.js"
 import { drawText } from "./DrawText.js"
 import { stagesSprites, trofeuSprite, laraSprites } from "./sprites.js"
 import { battleMusics, winSound } from "./musics.js"
@@ -8,7 +9,6 @@ import { changeScene } from "./SceneManager.js"
 import { PunchCpu, Kicker } from "./CPU.js"
 import { Shooter, Giant } from "./CPU2.js"
 import { getRandomPuncherSprites, getRandomKickerSprites, getRandomShooterSprites, getRandomGiantSprites } from "./CpuSpawner.js"
-import { clickWarningState, activateClickWarning, disableClickWarning, clickWarning } from "./inputs.js"
 import { globalState } from "./settings.js"
 
 export class ActionScene {
@@ -37,8 +37,17 @@ export class ActionScene {
 export class SceneVs extends ActionScene {
   constructor(context, canvas){
     super(context, canvas)
-    this.fighter1 = new globalState.player1(this.context, 280, 519, this.addMagic.bind(this))
-    this.fighter2 = new globalState.player2(this.context, 640, 519, this.addMagic.bind(this), globalState.hardVsBot)
+    
+    if (globalState.currentMode == "vsPlayer"){
+      this.fighter1 = new globalState.player1(this.context, 280, 519, this.addMagic.bind(this), globalState.p1fighterName)
+      this.fighter2 = new globalState.player2(this.context, 640, 519, this.addMagic.bind(this), globalState.p2fighterName)
+      input.setUpMpHud()
+    }
+    else if (globalState.currentMode == "vsBot"){
+      this.fighter1 = new globalState.player1(this.context, 280, 519, this.addMagic.bind(this), globalState.p1fighterName)
+      this.fighter2 = new globalState.player2(this.context, 640, 519, this.addMagic.bind(this), globalState.p2fighterName, globalState.hardVsBot)
+      input.setUpSingleHud()
+    }
     
     this.fighter1.currentDirection = this.fighter1.rightDirection
     this.fighter2.currentDirection = this.fighter2.leftDirection
@@ -88,11 +97,6 @@ export class SceneVs extends ActionScene {
     if (fWins == 1){
       context.drawImage(trofeuSprite, x, y, 70, 70)
     }
-    else if (fWins == 2){
-      context.drawImage(trofeuSprite, x, y, 70, 70)
-      context.drawImage(trofeuSprite, x + 72, y, 70, 70)
-    }
-    
   }
   
   resetRound(){
@@ -173,8 +177,8 @@ export class SceneVs extends ActionScene {
    // hp player2 
     this.context.fillRect(504, 24, this.hb2, 32)
     
-    this.drawTrophys(this.context, this.f1wins, 70, 70)
-    this.drawTrophys(this.context, this.f2wins, 760, 70)
+    this.drawTrophys(this.context, this.f1wins, 350, 70)
+    this.drawTrophys(this.context, this.f2wins, 490, 70)
   }
   
   cleanClassInstance(){
@@ -192,13 +196,14 @@ export class SceneVs extends ActionScene {
 export class SingleMode extends ActionScene {
   constructor(context, canvas){
   super(context, canvas)
-    this.player = new globalState.player1(this.context, 20, 519, this.addMagic.bind(this))
+    this.player = new globalState.player1(this.context, 20, 519, this.addMagic.bind(this), globalState.p1fighterName)
     this.hb1 = 392
     this.startTimer = 2.5
     this.spawner = [this.addGiant.bind(this), this.addPuncher.bind(this), this.addShooter.bind(this), this.addKicker.bind(this)]
     this.stageX = 0
     winSound.currentTime = 0
     this.invStageX = -1920
+    input.setUpSingleHud()
     this.grd = this.context.createLinearGradient(60, 80, 60, 110)
       this.grd.addColorStop(0, "yellow")
       this.grd.addColorStop(1, "goldenrod")
@@ -251,11 +256,19 @@ export class SingleMode extends ActionScene {
   
   
   update(frameTime){
+    if (this.player.lost){
+      this.context.globalAlpha -= frameTime.secondsPassed
+    }
+    if (this.context.globalAlpha < 0.1){
+      changeScene(MenuScene, this.context, this.canvas)
+      return
+    }
+    
     this.player.update(frameTime)
     
     if (this.player.shouldOffset && this.player.velocityX > 0){
-      this.stageX -= 400 * frameTime.secondsPassed 
-      this.invStageX += 400 * frameTime.secondsPassed
+      this.stageX -= this.player.offsetValue * frameTime.secondsPassed 
+      this.invStageX += this.player.offsetValue * frameTime.secondsPassed
     }
     
     if (this.stageX <= -960){
@@ -293,11 +306,11 @@ export class SingleMode extends ActionScene {
     }
   }
     
-    if (winSound.ended && clickWarningState.active == false){
-      activateClickWarning()
-      clickWarning.addEventListener('click', () => {
+    if (winSound.ended && input.clickWarningState.active == false){
+      input.activateClickWarning()
+      input.clickWarning.addEventListener('click', () => {
         changeScene(MenuScene, this.context, this.canvas)
-        disableClickWarning()
+        input.disableClickWarning()
       }, { once: true })
     }
     
@@ -337,10 +350,8 @@ export class SingleMode extends ActionScene {
     this.context.fillRect( 466, 24, -this.hb1, 32)
     
     this.context.fillStyle = "black"
-    this.context.fillRect(41, 83, 160, 35)
-    drawText(this.context, this.grd, 30, "Score: " + this.player.score.toString(), 50, 110)
-    
-    drawText(this.context, "white", 30, "entities amt: " + this.entities.length.toString(), 140, 140)
+    this.context.fillRect(220, 83, 160, 35)
+    drawText(this.context, this.grd, 30, "Score: " + this.player.score.toString(), 230, 110)
   }
   
   cleanClassInstance(){
