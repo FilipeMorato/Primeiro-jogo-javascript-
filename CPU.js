@@ -97,12 +97,12 @@ export class PunchCpu extends BaseFighter {
   hurtFallUpdate = () => {
    if (this.randomDirection < 0){
      if (this.angle > this.randomDirection){
-       this.angle -= 0.1
+       this.angle -= 4 * frameTime.secondsPassed
      }
    }
    else {
      if (this.angle < this.randomDirection){
-       this.angle += 0.1
+       this.angle += 4 * frameTime.secondsPassed
      }
    }
     if (performance.now() > this.hurtTimer + this.fallDuration){
@@ -129,7 +129,7 @@ export class PunchCpu extends BaseFighter {
   
   updateSlide(frameTime){
    if (Math.abs(this.slide) > 3200){
-  this.slide /= 1.2
+  this.slide /= 60 * frameTime.secondsPassed
   this.velocityX = this.slide * frameTime.secondsPassed
    }
    
@@ -157,11 +157,11 @@ export class PunchCpu extends BaseFighter {
       
       if (this.opponent.positionX < 43){
       this.slideDone = false
-      this.slide = 43000 * this.currentDirection
+      this.slide = 41000 * this.currentDirection
     }
     else {
       this.opponent.slideDone = false
-      this.opponent.slide = -43000 * this.currentDirection
+      this.opponent.slide = -41000 * this.currentDirection
     }
       this.hitStruck = true
     }
@@ -198,7 +198,7 @@ export class PunchCpu extends BaseFighter {
       this.lost = false
     }
     if (this.opponent.shouldOffset && this.opponent.velocityX > 0){
-    this.positionX += Math.floor((this.velocityX - 300) * frameTime.secondsPassed)
+    this.positionX += Math.floor((this.velocityX - this.opponent.offsetValue) * frameTime.secondsPassed)
     }
     else {
       this.positionX += Math.floor(this.velocityX * frameTime.secondsPassed)
@@ -306,12 +306,12 @@ export class Kicker extends BaseFighter{
   hurtFallUpdate = () => {
    if (this.randomDirection < 0){
      if (this.angle > this.randomDirection){
-       this.angle -= 0.1
+       this.angle -= 4 * frameTime.secondsPassed
      }
    }
    else {
      if (this.angle < this.randomDirection){
-       this.angle += 0.1
+       this.angle += 4 * frameTime.secondsPassed
      }
    }
     if (performance.now() > this.hurtTimer + this.fallDuration){
@@ -363,7 +363,7 @@ export class Kicker extends BaseFighter{
   
   updateSlide(frameTime){
    if (Math.abs(this.slide) > 3200){
-  this.slide /= 1.2
+  this.slide /= 60 * frameTime.secondsPassed
   this.velocityX = this.slide * frameTime.secondsPassed
    }
    
@@ -390,11 +390,11 @@ export class Kicker extends BaseFighter{
       
       if (this.opponent.positionX < 43){
       this.slideDone = false
-      this.slide = 73000 * this.currentDirection
+      this.slide = 53000 * this.currentDirection
     }
     else {
       this.opponent.slideDone = false
-      this.opponent.slide = -73000 * this.currentDirection
+      this.opponent.slide = -53000 * this.currentDirection
     }
       this.hitStruck = true
     }
@@ -415,7 +415,7 @@ export class Kicker extends BaseFighter{
     }
     
     if (this.opponent.shouldOffset && this.opponent.velocityX > 0){
-    this.positionX += Math.floor((this.velocityX - 300) * frameTime.secondsPassed)
+    this.positionX += Math.floor((this.velocityX - this.opponent.offsetValue) * frameTime.secondsPassed)
     }
     else {
       this.positionX += Math.floor(this.velocityX * frameTime.secondsPassed)
