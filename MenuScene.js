@@ -1,11 +1,12 @@
 import { drawText } from "./DrawText.js"
 import * as soundFuncs from "./SoundHandler.js"
-import { filipeSprites, aneSprites, pedroSprites } from "./sprites.js"
-import { clicouNoRetanguloCanvas } from "./settings.js"
+import { filipeSprites, aneSprites, pedroSprites, laraSprites } from "./sprites.js"
+import { clicouNoRetanguloCanvas, globalState } from "./settings.js"
 import { SingleMode, SceneVs } from "./ActionScenes.js"
 import { SelectScene } from "./CharSelectScene.js"
 import { changeScene } from "./SceneManager.js"
-import { globalState } from "./settings.js"
+import * as input from "./inputs.js"
+import  { menuBtn } from "./menuReturnButton.js"
 
 export class MenuScene {
     constructor(context, canvas) {
@@ -23,6 +24,8 @@ this.context.globalAlpha = 0
 
 this.menuFireFrames = []
 this.loadFireFrames()
+input.disableMpHud()
+input.disableSingleHud()
 
 this.handleClick = (event) => { 
   if (clicouNoRetanguloCanvas(event, this.canvas, 130, 60, 157, 60)){
@@ -83,11 +86,13 @@ draw(){
 
 drawPostersFighters(){
         this.context.drawImage(filipeSprites.win.img, 40, 115, 129, 411)
-        this.context.drawImage(aneSprites.win.img, 360, 210, 199.1, 328.9)
-        this.context.drawImage(pedroSprites.win.img, 740, 248, 87.2, 290.9)
+        this.context.drawImage(aneSprites.win.img, 260, 210, 199.1, 328.9)
+        this.context.drawImage(laraSprites.win.img, 580, 238, 120, 290.9)
+        this.context.drawImage(pedroSprites.win.img, 820, 248, 87.2, 290.9)
 }
 
 cleanClassInstance(){
+  menuBtn.style.display = "none"
   this.context.globalAlpha = 1
   this.context = null
   this.canvas.removeEventListener("click", this.handleClick)
