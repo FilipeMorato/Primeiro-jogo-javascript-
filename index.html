@@ -27,12 +27,17 @@
       image-rendering: pixelated;
       z-index: 1;
     }
-    .arrow {
+    .arrow, .mpArrow{
       all: unset;
+      display: none;
       position: absolute;
       width: 50px;
       height: 50px;
       background-size: cover;
+    }
+  
+    .mpArrow{
+      background-blend-mode: lighten;
     }
   
     #clickWarning{
@@ -46,6 +51,16 @@
      justify-content: center;
      align-items: center; 
      opacity: 0.5; 
+    }
+  
+    #menuBtn{
+      position: absolute;
+      display: none;
+      background-image: url('menu.png');
+      z-index: 3;
+      top: 70%;
+      left: 5%;
+      background-size: cover;
     }
     
     #up {
@@ -79,12 +94,88 @@
       top: 52%;
       left: 86%;
     }
+  
+    #up1 {
+      background-image: url('arrow.png');
+      background-color: rgba(255, 0, 0, 1);
+      top: 36%;
+      left: 4%;
+    }
+    #right1 {
+      background-image: url('arrow.png');
+      background-color: rgba(255, 0, 0, 1);
+      top: 47%;
+      left: 10%;
+    }
+    #down1 {
+      background-image: url('arrow.png');
+      background-color: rgba(255, 0, 0, 1);
+      top: 58%;
+      left: 4%;
+    }
+    #left1 {
+      background-image: url('arrow.png');
+      background-color: rgba(255, 0, 0, 1);
+      top: 47%;
+      left: 1%;
+    }
+    #punch1 {
+      background-image: url('punch.png');
+      background-color: rgba(255, 0, 0, 1);
+      top: 13%;
+      left: 25%;
+    }
+    #kick1 {
+      background-image: url('kick.png');
+      background-color: rgba(255, 0, 0, 1);
+      top: 13%;
+      left: 15%;
+    }
+  
+    #up2 {
+      background-image: url('arrow.png');
+      background-color: rgba(0, 0, 255, 1);
+      top: 36%;
+      left: 84%;
+    }
+    #right2 {
+      background-image: url('arrow.png');
+      background-color: rgba(0, 0, 255, 1);
+      top: 47%;
+      left: 90%;
+    }
+    #down2 {
+      background-image: url('arrow.png');
+      background-color: rgba(0, 0, 255, 1);
+      top: 58%;
+      left: 84%;
+    }
+    #left2 {
+      background-image: url('arrow.png');
+      background-color: rgba(0, 0, 255, 1);
+      top: 47%;
+      left: 80%;
+    }
+    #punch2 {
+      background-image: url('punch.png');
+      background-color: rgba(0, 0, 255, 1);
+      top: 13%;
+      left: 61%;
+    }
+    #kick2 {
+      background-image: url('kick.png');
+      background-color: rgba(0, 0, 255, 1);
+      top: 13%;
+      left: 71%;
+    }
     
   </style>
   <script type= "module" src= "Main.js"></script>
 </head>
 <body>
   <div id="canvas-container">
+    
+    <div id="menuBtn"></div>
     
     <div id="clickWarning">
       <h1>Clique para prosseguir meu nobre</h1>     
@@ -98,14 +189,50 @@
    <div class="arrow" id="left"></div>
    <div class="arrow" id="punch"></div>
    <div class="arrow" id="kick"></div>
+  
+   <div class="mpArrow" id="up1"></div>
+   <div class="mpArrow" id="right1"></div>
+   <div class="mpArrow" id="down1"></div>
+   <div class="mpArrow" id="left1"></div>
+   <div class="mpArrow" id="punch1"></div>
+   <div class="mpArrow" id="kick1"></div>
+  
+   <div class="mpArrow" id="up2"></div>
+   <div class="mpArrow" id="right2"></div>
+   <div class="mpArrow" id="down2"></div>
+   <div class="mpArrow" id="left2"></div>
+   <div class="mpArrow" id="punch2"></div>
+   <div class="mpArrow" id="kick2"></div>
    
-  <script>
+  <script type="module">
+    import { hudCurrently, mpHudCurrently } from "./inputs.js"
+  
     const canvas = document.getElementById('canvas');
+    const menuButton = document.getElementById('menuBtn');
     const container = document.getElementById('canvas-container');
     const buttons = document.getElementsByClassName("arrow")
+    const mpButtons = document.getElementsByClassName("mpArrow")
     
     const originalWidth = canvas.width;
     const originalHeight = canvas.height;
+  
+    function resizeButtonGroup(group, scale){
+      if (hudCurrently.active == true){
+        for (let button of group){
+          button.style.width = `${130 * scale}px`
+          button.style.height = `${130 * scale}px`
+        }
+      }
+      if (mpHudCurrently.active == true){
+        for (let button of group){
+          button.style.width = `${150 * scale}px`
+          button.style.height = `${150 * scale}px`
+        }
+      }
+      
+      menuButton.style.width = `${120 * scale}px`
+      menuButton.style.height = `${90 * scale}px`
+    }
 
     function resizeCanvas() {
       const windowWidth = window.innerWidth;
@@ -121,11 +248,9 @@
       container.style.width = `${originalWidth * scale}px`;
       container.style.height = `${originalHeight * scale}px`;
       
-      for (let button of buttons){
-        button.style.width = `${140 * scale}px`
-        button.style.height = `${140 * scale}px`
-        button.style.transformOrigin = "center"
-      }
+      resizeButtonGroup(buttons, scale)
+      resizeButtonGroup(mpButtons, scale)
+     // console.log(mpButtons[0].style.display == "none")
     }
 
     window.addEventListener('resize', resizeCanvas);
