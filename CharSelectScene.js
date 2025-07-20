@@ -1,24 +1,25 @@
-import { clicouNoRetanguloCanvas } from "./settings.js"
+import { clicouNoRetanguloCanvas, globalState } from "./settings.js"
 import * as soundFuncs from "./SoundHandler.js"
 import { charSelectSong } from "./musics.js"
-import { globalState } from "./settings.js"
 import { startSprite, unselectSprite, filipeSprites, aneSprites, pedroSprites, laraSprites } from "./sprites.js"
-import { VsFilipe, SingleFilipe, BotFilipe } from "./Filipe.js"
-import { VsPedro, SinglePedro, BotPedro } from "./Pedro.js"
-import { VsAne, SingleAne, BotAne } from "./Ane.js"
-import { VsLara, SingleLara, BotLara } from "./Lara.js"
+import { VsFighter, VsModeBot, SingleFighter } from "./Fighter.js"
+import { LeftHudFighter, RightHudFighter } from "./SameDeviceMultiplayer.js"
 import { changeScene } from "./SceneManager.js"
 import { SingleMode, SceneVs } from "./ActionScenes.js"
 import { drawText } from "./DrawText.js"
+import { activateMenuBtn } from "./menuReturnButton.js"
 
 export class SelectScene{
     constructor(context, canvas) {
       this.context = context
+      activateMenuBtn()
       this.canvas = canvas
       this.context.fillStyle = 'navy'
       this.ready = false
       globalState.player1 = null
       globalState.player2 = null
+      globalState.p1fighterName = ""
+      globalState.p2fighterName = ""
       this.player1selection = []
       this.player2selection = []
       //console.log(charSelectSong)
@@ -33,6 +34,11 @@ export class SelectScene{
          this.updateHardMode(event)
         this.checkStart() 
        }
+       else if (globalState.currentMode == "vsPlayer"){
+         this.updateVsPlayerMode(event)
+         this.updateUnselect()
+         this.checkStart()
+       }
       }
       
       this.canvas.addEventListener("click", this.handleClick)
@@ -41,22 +47,26 @@ export class SelectScene{
   
   updateSingleMode(event){
     if (clicouNoRetanguloCanvas(event, this.canvas, 235, 240, 110, 110)){
-      globalState.player1 = SingleFilipe
+      globalState.player1 = SingleFighter
+      globalState.p1fighterName = "filipe"
       this.ready = true
       this.player1selection = [235, 240, 110, 110]
     }
     else if (clicouNoRetanguloCanvas(event, this.canvas, 360, 240, 110, 110)){
-      globalState.player1 = SinglePedro
+      globalState.player1 = SingleFighter
+      globalState.p1fighterName = "pedro"
       this.ready = true
       this.player1selection = [360, 240, 110, 110]
     }
     else if (clicouNoRetanguloCanvas(event, this.canvas, 485, 240, 110, 110)){
-      globalState.player1 = SingleAne
+      globalState.player1 = SingleFighter
+      globalState.p1fighterName = "ane"
        this.ready = true
        this.player1selection = [485, 240, 110, 110]
     }
     else if (clicouNoRetanguloCanvas(event, this.canvas, 610, 240, 110, 110)){
-      globalState.player1 = SingleLara
+      globalState.player1 = SingleFighter
+      globalState.p1fighterName = "lara"
       this.ready = true
       this.player1selection = [610, 240, 110, 110]
     }
@@ -66,41 +76,102 @@ export class SelectScene{
     //se nenhum player selecionou ainda, seleção vai para o player1
     if (globalState.player1 == null && globalState.player2 == null){
       if (clicouNoRetanguloCanvas(event, this.canvas, 235, 240, 110, 110)){
-      globalState.player1 = VsFilipe
+      globalState.player1 = VsFighter
+      globalState.p1fighterName = "filipe"  
       this.player1selection = [235, 240, 110, 110]
     }
     else if (clicouNoRetanguloCanvas(event, this.canvas, 360, 240, 110, 110)){
-      globalState.player1 = VsPedro
+      globalState.player1 = VsFighter
+      globalState.p1fighterName = "pedro"
       this.player1selection = [360, 240, 110, 110]
     }
     else if (clicouNoRetanguloCanvas(event, this.canvas, 485, 240, 110, 110)){
-      globalState.player1 = VsAne
+      globalState.player1 = VsFighter
+      globalState.p1fighterName = "ane"
        this.player1selection = [485, 240, 110, 110]
     }
     else if (clicouNoRetanguloCanvas(event, this.canvas, 610, 240, 110, 110)){
-      globalState.player1 = VsLara
+      globalState.player1 = VsFighter
+      globalState.p1fighterName = "lara"
       this.player1selection = [610, 240, 110, 110]
      }
     }
     //se player1 selecionou, vai para o player 2
     else if (globalState.player1 != null && globalState.player2 == null){
       if (clicouNoRetanguloCanvas(event, this.canvas, 235, 240, 110, 110)){
-      globalState.player2 = BotFilipe
+      globalState.player2 = VsModeBot
+      globalState.p2fighterName = "filipe"  
       this.ready = true
       this.player2selection = [235, 240, 110, 110]
     }
     else if (clicouNoRetanguloCanvas(event, this.canvas, 360, 240, 110, 110)){
-      globalState.player2 = BotPedro
+      globalState.player2 = VsModeBot
+      globalState.p2fighterName = "pedro"
       this.ready = true
       this.player2selection = [360, 240, 110, 110]
     }
     else if (clicouNoRetanguloCanvas(event, this.canvas, 485, 240, 110, 110)){
-      globalState.player2 = BotAne
+      globalState.player2 = VsModeBot
+      globalState.p2fighterName = "ane"
        this.ready = true
        this.player2selection = [485, 240, 110, 110]
     }
     else if (clicouNoRetanguloCanvas(event, this.canvas, 610, 240, 110, 110)){
-      globalState.player2 = BotLara
+      globalState.player2 = VsModeBot
+      globalState.p2fighterName = "lara"
+      this.ready = true
+      this.player2selection = [610, 240, 110, 110]
+     }
+    }
+  }
+  
+  updateVsPlayerMode(event){
+    //se nenhum player selecionou ainda, seleção vai para o player1
+    if (globalState.player1 == null && globalState.player2 == null){
+      if (clicouNoRetanguloCanvas(event, this.canvas, 235, 240, 110, 110)){
+      globalState.player1 = LeftHudFighter
+      globalState.p1fighterName = "filipe"  
+      this.player1selection = [235, 240, 110, 110]
+    }
+    else if (clicouNoRetanguloCanvas(event, this.canvas, 360, 240, 110, 110)){
+      globalState.player1 = LeftHudFighter
+      globalState.p1fighterName = "pedro"
+      this.player1selection = [360, 240, 110, 110]
+    }
+    else if (clicouNoRetanguloCanvas(event, this.canvas, 485, 240, 110, 110)){
+      globalState.player1 = LeftHudFighter
+      globalState.p1fighterName = "ane"
+       this.player1selection = [485, 240, 110, 110]
+    }
+    else if (clicouNoRetanguloCanvas(event, this.canvas, 610, 240, 110, 110)){
+      globalState.player1 = LeftHudFighter
+      globalState.p1fighterName = "lara"
+      this.player1selection = [610, 240, 110, 110]
+     }
+    }
+    //se player1 selecionou, vai para o player 2
+    else if (globalState.player1 != null && globalState.player2 == null){
+      if (clicouNoRetanguloCanvas(event, this.canvas, 235, 240, 110, 110)){
+      globalState.player2 = RightHudFighter
+      globalState.p2fighterName = "filipe"  
+      this.ready = true
+      this.player2selection = [235, 240, 110, 110]
+    }
+    else if (clicouNoRetanguloCanvas(event, this.canvas, 360, 240, 110, 110)){
+      globalState.player2 = RightHudFighter
+      globalState.p2fighterName = "pedro"
+      this.ready = true
+      this.player2selection = [360, 240, 110, 110]
+    }
+    else if (clicouNoRetanguloCanvas(event, this.canvas, 485, 240, 110, 110)){
+      globalState.player2 = RightHudFighter
+      globalState.p2fighterName = "ane"
+       this.ready = true
+       this.player2selection = [485, 240, 110, 110]
+    }
+    else if (clicouNoRetanguloCanvas(event, this.canvas, 610, 240, 110, 110)){
+      globalState.player2 = RightHudFighter
+      globalState.p2fighterName = "lara"
       this.ready = true
       this.player2selection = [610, 240, 110, 110]
      }
@@ -126,7 +197,7 @@ export class SelectScene{
       if (globalState.currentMode == "single"){
         changeScene(SingleMode, this.context, this.canvas)
       }
-      else if (globalState.currentMode == "vsBot"){
+      else if (globalState.currentMode == "vsBot" || globalState.currentMode == "vsPlayer"){
         changeScene(SceneVs, this.context, this.canvas)
       }
     }
