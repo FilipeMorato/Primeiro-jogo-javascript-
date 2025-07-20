@@ -81,7 +81,7 @@ export class Magic{
     }
   }
   updateCollided = (frameTime) => {
-    this.alpha -= 0.1
+    this.alpha -= 5 * frameTime.secondsPassed
   if (performance.now() > this.destroyTimer + 180){
     this.destroyTimer = performance.now()
     this.destroy()
