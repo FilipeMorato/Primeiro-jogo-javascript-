@@ -29,10 +29,6 @@ const originalWidth = elemento.width;
     )
 }
 
-function isMobileDevice(){
-  return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-}
-
 export const globalState = {
   currentMode: "",
   player1: null,
