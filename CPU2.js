@@ -287,9 +287,14 @@ export class Giant extends PunchCpu{
   }
   
   idleUpdate = () => {
-    if (this.opponnent.currentState == this.opponnent.states.hurtFall){
-      return
-    }
+    if (!this.opponnent)
+      { 
+        
+        return 
+      }
+
+    if (this.opponnent.currentState == this.opponnent.states.hurtFall)
+      { return }
 
     const rndm = Math.floor(Math.random() * 500)
     if (rndm < 2){ this.changeState(this.states.kick) }

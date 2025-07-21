@@ -189,9 +189,12 @@ export class PunchCpu extends BaseFighter {
   }
   
   update(frameTime){
-    if (this.positionX < -this.hurtBox[2]){
+    if (this.positionX < -300){
+      
         this.destroy()
+        return
       }
+      console.log(this.currentState[2])
     
     if (this.context == null){ return }
     
@@ -410,11 +413,12 @@ export class Kicker extends BaseFighter{
     }
   
   update(frameTime){
+    if (this.context == undefined){ return }
+
     if (this.positionX < -this.hurtBox[2]){
         this.destroy()
+        return
       }
-    
-    if (this.context == undefined){ return }
     
     if (this.hp <= 0){
       this.lost = true
