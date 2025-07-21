@@ -190,11 +190,9 @@ export class PunchCpu extends BaseFighter {
   
   update(frameTime){
     if (this.positionX < -300){
-      
         this.destroy()
         return
       }
-      console.log(this.currentState[2])
     
     if (this.context == null){ return }
     
