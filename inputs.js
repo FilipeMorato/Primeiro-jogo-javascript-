@@ -8,6 +8,14 @@ export const mpHudCurrently = {
   active: false
 }
 
+let isMobileBool = false
+
+function isMobileDevice(){
+  return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+}
+
+isMobileBool = isMobileDevice()
+
 const keysState = [false, false, false, false, false, false]
 
 const mpKeysState = [false, false, false, false, false, false, false, false, false, false, false, false]
@@ -140,6 +148,7 @@ export function setUpSingleHud() {
     // Usamos bind(null, i) ou criamos uma closure para passar o 'i' corretamente
     hud[i].ontouchstart = handleTouchStart(i, hudState)
     hud[i].ontouchend = handleTouchEnd(i, hudState)
+    if (isMobileBool == false) { continue }
     hud[i].style.display = "block"
   }
   hudCurrently.active = true
@@ -155,6 +164,7 @@ export function disableSingleHud() {
     // É importante passar as mesmas referências de função que foram usadas para adicionar
     hud[i].ontouchstart = null // Atribui null para remover o listener de ontouchstart
     hud[i].ontouchend = null   // Atribui null para remover o listener de ontouchend
+    if (isMobileBool == false) { continue }
     hud[i].style.display = "none"
   }
   hudCurrently.active = false
@@ -170,6 +180,7 @@ export function setUpMpHud() {
     // Usamos bind(null, i) ou criamos uma closure para passar o 'i' corretamente
     mpHud[i].ontouchstart = handleTouchStart(i, mpHudState)
     mpHud[i].ontouchend = handleTouchEnd(i, mpHudState)
+    if (isMobileBool == false) { continue }
     mpHud[i].style.display = "block"
   }
   mpHudCurrently.active = true
@@ -185,6 +196,7 @@ export function disableMpHud() {
     // É importante passar as mesmas referências de função que foram usadas para adicionar
     mpHud[i].ontouchstart = null // Atribui null para remover o listener de ontouchstart
     mpHud[i].ontouchend = null   // Atribui null para remover o listener de ontouchend
+    if (isMobileBool == false) { continue }
     mpHud[i].style.display = "none"
   }
   mpHudCurrently.active = false
