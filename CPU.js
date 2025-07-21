@@ -128,8 +128,13 @@ export class PunchCpu extends BaseFighter {
   }
   
   updateSlide(frameTime){
-   if (Math.abs(this.slide) > 3200){
-  this.slide /= 60 * frameTime.secondsPassed
+   const deceleration = 125000
+   if (Math.abs(this.slide) > 3500){
+    if (this.slide > 0) {
+            this.slide -= deceleration * frameTime.secondsPassed
+        } else {
+            this.slide += deceleration * frameTime.secondsPassed
+        }
   this.velocityX = this.slide * frameTime.secondsPassed
    }
    
@@ -362,8 +367,13 @@ export class Kicker extends BaseFighter{
   }
   
   updateSlide(frameTime){
-   if (Math.abs(this.slide) > 3200){
-  this.slide /= 60 * frameTime.secondsPassed
+   const deceleration = 125000
+   if (Math.abs(this.slide) > 3500){
+    if (this.slide > 0) {
+            this.slide -= deceleration * frameTime.secondsPassed
+        } else {
+            this.slide += deceleration * frameTime.secondsPassed
+        }
   this.velocityX = this.slide * frameTime.secondsPassed
    }
    

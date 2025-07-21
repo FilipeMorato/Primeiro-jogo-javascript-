@@ -180,6 +180,7 @@ hitClash(opponent, atkState){
     this.angle = 0
     this.groundPosition = 519
     this.hitStruck = false
+    this.slideDone = true
   }
   idleUpdate = () => {
     if (isButtonPressed(1)) {
@@ -383,9 +384,14 @@ hitClash(opponent, atkState){
   }
   
   updateSlide(frameTime){
-   if (Math.abs(this.slide) > 3200){
-  this.slide /= 60 * frameTime.secondsPassed
-  this.velocityX = this.slide * frameTime.secondsPassed
+    const deceleration = 125000
+   if (Math.abs(this.slide) > 3500){
+    if (this.slide > 0) {
+            this.slide -= deceleration * frameTime.secondsPassed
+        } else {
+            this.slide += deceleration * frameTime.secondsPassed
+        }
+    this.velocityX = this.slide * frameTime.secondsPassed
    }
    
    else {
@@ -399,7 +405,7 @@ hitClash(opponent, atkState){
        }
      }
      this.slideDone = true
-   }
+    }
    }
   }
   
@@ -426,7 +432,7 @@ hitClash(opponent, atkState){
       
       if (!this.hitClash(this.opponent, this.opponent.states.gilete)){
         console.log("noClash")
-      this.closeAttackReaction(90, 63000, this.opponent.states.hurtFall)
+      this.closeAttackReaction(90, 53000, this.opponent.states.hurtFall)
     }
     else {
       console.log("clash")
@@ -440,13 +446,13 @@ hitClash(opponent, atkState){
       
       if (this.opponent.shouldTransferSlide()){
       this.slideDone = false
-      this.slide = 63000 * this.currentDirection
+      this.slide = 53000 * this.currentDirection
     }
     else {
       this.opponent.slideDone = false
-      this.opponent.slide = -63000 * this.currentDirection
+      this.opponent.slide = -53000 * this.currentDirection
       this.slideDone = false
-      this.slide = -63000 * this.opponent.currentDirection
+      this.slide = -53000 * this.opponent.currentDirection
     }
     }
     this.hitStruck = true
@@ -461,7 +467,7 @@ hitClash(opponent, atkState){
       
       if (!this.hitClash(this.opponent, this.opponent.states.kick)){
         console.log("noClash")
-      this.closeAttackReaction(70, 63000, this.opponent.states.hurtFall)
+      this.closeAttackReaction(70, 53000, this.opponent.states.hurtFall)
     }
     else {
       console.log("clash")
@@ -475,13 +481,13 @@ hitClash(opponent, atkState){
       
       if (this.opponent.shouldTransferSlide()){
       this.slideDone = false
-      this.slide = 63000 * this.currentDirection
+      this.slide = 53000 * this.currentDirection
     }
     else {
       this.opponent.slideDone = false
-      this.opponent.slide = -63000 * this.currentDirection
+      this.opponent.slide = -53000 * this.currentDirection
       this.slideDone = false
-      this.slide = -63000 * this.opponent.currentDirection
+      this.slide = -53000 * this.opponent.currentDirection
     }
     }
     }
@@ -489,7 +495,7 @@ hitClash(opponent, atkState){
     if (this.currentState == this.states.punch){
       if (!this.hitClash(this.opponent, this.opponent.states.punch)){
         console.log("noClash")
-      this.closeAttackReaction(50, 43000, this.opponent.states.hurtStand)
+      this.closeAttackReaction(50, 51000, this.opponent.states.hurtStand)
       if (this.opponent.currentState == this.opponent.states.hurtStand){
       this.opponent.states.hurtStand[1]()
       }
@@ -506,13 +512,13 @@ hitClash(opponent, atkState){
       
       if (this.opponent.shouldTransferSlide()){
       this.slideDone = false
-      this.slide = 43000 * this.currentDirection
+      this.slide = 51000 * this.currentDirection
     }
     else {
       this.opponent.slideDone = false
-      this.opponent.slide = -43000 * this.currentDirection
+      this.opponent.slide = -51000 * this.currentDirection
       this.slideDone = false
-      this.slide = -43000 * this.opponent.currentDirection
+      this.slide = -51000 * this.opponent.currentDirection
     }
     }
   }

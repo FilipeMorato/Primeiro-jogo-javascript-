@@ -57,7 +57,7 @@ export class Magic{
       opponent.changeState(opponent.states.hurtStand)
       
       opponent.slideDone = false
-      opponent.slide = (71000 * this.direction)
+      opponent.slide = (51000 * this.direction)
       
       this.struck = true
       this.changeState()
@@ -95,7 +95,7 @@ export class Magic{
   }
   
   draw(context){
-    if (this.alpha <= 0){
+    if (this.alpha < 0.1){
      return
     }
     context.save()

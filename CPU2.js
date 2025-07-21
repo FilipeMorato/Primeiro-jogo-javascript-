@@ -127,8 +127,13 @@ export class Shooter extends BaseFighter{
   }
   
   updateSlide(frameTime){
-   if (Math.abs(this.slide) > 3200){
-  this.slide /= 60 * frameTime.secondsPassed
+   const deceleration = 125000
+   if (Math.abs(this.slide) > 3500){
+    if (this.slide > 0) {
+            this.slide -= deceleration * frameTime.secondsPassed
+        } else {
+            this.slide += deceleration * frameTime.secondsPassed
+        }
   this.velocityX = this.slide * frameTime.secondsPassed
    }
    
@@ -282,6 +287,10 @@ export class Giant extends PunchCpu{
   }
   
   idleUpdate = () => {
+    if (this.opponnent.currentState == this.opponnent.states.hurtFall){
+      return
+    }
+
     const rndm = Math.floor(Math.random() * 500)
     if (rndm < 2){ this.changeState(this.states.kick) }
   }
