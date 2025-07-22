@@ -1,7 +1,7 @@
 import { magicSprite } from "./sprites.js"
 import { rectsOverlap } from "./collisions.js"
 import * as soundFuncs from "./SoundHandler.js"
-import { fogobixo } from "./musics.js"
+import { fogobixo, magicShoot } from "./musics.js"
 import { frameTime } from "./Main.js"
 const emptySprite = new Image()
 
@@ -21,6 +21,7 @@ export class Magic{
       collided: [[emptySprite], this.updateCollided]
     }
     this.currentState = this.states.active
+    soundFuncs.playSound(magicShoot, 1, { volume: 0.7, loop: false })
   }
   changeState(){
     this.destroyTimer = performance.now()

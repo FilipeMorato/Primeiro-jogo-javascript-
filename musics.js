@@ -17,8 +17,9 @@ export const battleMusics = [
     createAudio("./punch2.mp3"),
     createAudio("./punch3.mp3")
     ]
-    
-    export const woosh = createAudio("./woosh.mp3")
-    export const fogobixo = createAudio("./fogobixo.mp3")
-    export const winSound = createAudio("./Win.mp3")
-    export const charSelectSong = createAudio("./music/characterSelect.mp3")
+
+export const woosh = createAudio("./woosh.mp3")
+export const fogobixo = createAudio("./fogobixo.mp3")
+export const winSound = createAudio("./Win.mp3")
+export const charSelectSong = createAudio("./music/characterSelect.mp3")
+export const magicShoot = createAudio("./magic.mp3")
