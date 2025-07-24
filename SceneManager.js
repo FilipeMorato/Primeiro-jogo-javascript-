@@ -6,6 +6,7 @@ export function changeScene(newScene, context, canvas){
 }
 if (currentScene){
   currentScene.cleanClassInstance()
+  currentScene = null
 }
   currentScene = new newScene(context, canvas)
 }
