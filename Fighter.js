@@ -25,7 +25,7 @@ export class BaseFighter {
   this.currentFrame = 0
   this.shouldSlide = false
   this.addMagic = addMagic
-  this.magicDelay = 1.7
+  this.magicDelay = 1.2
   this.firedMagic = false
   this.hurtBox = [0,0,0,0]
   this.opponent
@@ -180,7 +180,6 @@ hitClash(opponent, atkState){
     this.angle = 0
     this.groundPosition = 519
     this.hitStruck = false
-    this.slideDone = true
   }
   idleUpdate = () => {
     if (isButtonPressed(1)) {
@@ -431,11 +430,9 @@ hitClash(opponent, atkState){
     if (this.currentState == this.states.gilete && !this.notLookingToOpponent() && this.opponent.currentState != this.opponent.states.hurtFall && rectsOverlap(this.gileteBox[0], this.gileteBox[1], this.gileteBox[2], this.gileteBox[3], x2, y2, width2, height2)){
       
       if (!this.hitClash(this.opponent, this.opponent.states.gilete)){
-        console.log("noClash")
-      this.closeAttackReaction(90, 51000, this.opponent.states.hurtFall)
+      this.closeAttackReaction(70, 51000, this.opponent.states.hurtFall)
     }
     else {
-      console.log("clash")
       playRandomPunchSound()
       this.opponent.changeState(this.opponent.states.hurtFall)
       this.changeState(this.states.hurtFall)
@@ -462,15 +459,12 @@ hitClash(opponent, atkState){
     if (this.currentFrame != 1 || this.notLookingToOpponent() || this.opponent.currentState == this.opponent.states.hurtFall){
       return
     }
-    console.log("hit!")
     if (this.currentState == this.states.kick){
       
       if (!this.hitClash(this.opponent, this.opponent.states.kick)){
-        console.log("noClash")
-      this.closeAttackReaction(70, 51000, this.opponent.states.hurtFall)
+      this.closeAttackReaction(50, 51000, this.opponent.states.hurtFall)
     }
     else {
-      console.log("clash")
       playRandomPunchSound()
       this.opponent.changeState(this.opponent.states.hurtFall)
       this.changeState(this.states.hurtFall)
@@ -494,14 +488,12 @@ hitClash(opponent, atkState){
     
     if (this.currentState == this.states.punch){
       if (!this.hitClash(this.opponent, this.opponent.states.punch)){
-        console.log("noClash")
-      this.closeAttackReaction(50, 43000, this.opponent.states.hurtStand)
+      this.closeAttackReaction(30, 43000, this.opponent.states.hurtStand)
       if (this.opponent.currentState == this.opponent.states.hurtStand){
       this.opponent.states.hurtStand[1]()
       }
     }
     else {
-      console.log("clash")
       playRandomPunchSound()
       this.opponent.changeState(this.opponent.states.hurtStand)
       this.changeState(this.states.hurtStand)
@@ -590,11 +582,11 @@ hitClash(opponent, atkState){
     if (this.firedMagic == true){
       this.magicDelay -= frameTime.secondsPassed
       if (this.magicDelay <= 0){
-        this.magicDelay = 1.7
+        this.magicDelay = 1.2
         this.firedMagic = false
       }
     } else {
-      this.magicDelay = 1.7
+      this.magicDelay = 1.2
     }
     
     this.positionX += this.velocityX * frameTime.secondsPassed
