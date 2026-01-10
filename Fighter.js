@@ -5,11 +5,17 @@ import { punchSounds, woosh } from "./musics.js"
 import { airSprites } from "./sprites.js"
 import { frameTime } from "./Main.js"
 import { setFighterInstanceSprites } from "./CpuSpawner.js"
+import { p1Stick } from "./virtualJoystick.js"
 
 export function playRandomPunchSound(){
   const random = Math.floor(Math.random() * 2)
   soundFuncs.playSound(punchSounds[random], 1, { volume: 1, loop: false })
 }
+
+export let gravity = 4100
+
+let blueMeter = null
+let fullMeter = null
 
 export class BaseFighter {
   constructor(context, x, y, addMagic, name){
@@ -62,10 +68,31 @@ export class VsFighter extends BaseFighter {
     this.jumpSprite = {}
     this.magicTimer = 0
     this.hp = 392
-    this.gileteBox = [0,0,0,0]
     this.airTimer = 0.3
     this.currentAir = 0
     this.winDelay = 1
+    if (blueMeter == null || fullMeter == null){
+      blueMeter = this.context.createLinearGradient(480, 480, 480, 515)
+      blueMeter.addColorStop(0, "cyan")
+      blueMeter.addColorStop(1, "blue")
+    
+      fullMeter = this.context.createLinearGradient(480, 480, 480, 515)
+      fullMeter.addColorStop(0, "yellow")
+      fullMeter.addColorStop(1, "goldenrod")
+    }
+    this.meterColor = blueMeter
+    this.superAttack = {
+      sequence: [],
+      meter: 0,
+      doneSteps: 0,
+      nextInput: "",
+      timer: 1,
+      durationTimer: 0,
+      secondPhase: false,
+      kickSpinDelay: 0.07,
+      freezeDelay: 0,
+      hitCount: 0
+    }
     
     this.states = {
       idle: [[this.idleSprite], this.idleInit, this.idleUpdate],
@@ -78,7 +105,8 @@ export class VsFighter extends BaseFighter {
       win: [[this.winSprite], this.winInit],
       sad: [[this.sadSprite], this.sadInit],
       jump: [[this.jumpSprite], this.jumpInit, this.jumpUpdate],
-      gilete: [[this.kick1Sprite], this.gileteInit, this.gileteUpdate]
+      gilete: [[this.kick1Sprite], this.gileteInit, this.gileteUpdate],
+      superCombo: [[this.kick1Sprite], this.superInit, this.superUpdate]
     }
     setFighterInstanceSprites(this)
     this.currentState = this.states.idle
@@ -86,12 +114,6 @@ export class VsFighter extends BaseFighter {
   
   isAnimationFinished() {
   return this.currentFrame >= this.currentState[0].length - 1;
-}
-
-getGileteBox(){
-  const x = this.currentDirection == this.leftDirection ? Math.round(this.positionX - this.states.kick[0][0].adjusts[1]/1.8) : this.positionX + 30
-  this.gileteBox = [x, this.positionY - 140, 120, 100]
-  return this.gileteBox
 }
 
 doingMagicInput(){
@@ -107,6 +129,20 @@ doingMagicInput(){
   }
   else {
     return false
+  }
+}
+
+//serve para o oponente nao sair pra longe durante o super combo
+keepFightersClose(opponent){
+  const distance = this.positionX - opponent.positionX
+  
+  if (Math.abs(distance) > 250){
+    if (distance > 0){
+      this.positionX -= 60
+    }
+    else if (distance < 0){
+      this.positionX += 60
+    }
   }
 }
 
@@ -130,11 +166,69 @@ notLookingToOpponent(){
   else { return false }
 }
 
+invertDirection(){
+    if (this.currentDirection == this.leftDirection)
+    { this.currentDirection = this.rightDirection }
+    
+    else if (this.currentDirection == this.rightDirection)
+    { this.currentDirection = this.leftDirection }
+  }
+
 hitClash(opponent, atkState){
     return opponent.currentState == atkState && !opponent.notLookingToOpponent() 
     }
     
-    closeAttackReaction(damage, slide, damageState){
+    updateSuperHistory(){
+      //esse if é para caso nenhuma etapa da sequencia do super estiver feita ainda
+      if (this.superAttack.doneSteps == 0){
+        if (p1Stick.direction == "downleft" || p1Stick.direction == "left"){
+          
+          this.superAttack.sequence = ["downleft", "downright", "downleft", "downright"]
+           this.superAttack.nextInput = "right"
+           this.superAttack.doneSteps += 1
+        }
+        else if (p1Stick.direction == "downright" || p1Stick.direction == "right"){
+          
+          this.superAttack.sequence = ["downright", "downleft", "downright", "downleft"]
+        this.superAttack.nextInput = "left"
+        this.superAttack.doneSteps += 1
+      }
+      return
+    }
+      
+      //esse if é para depois que ja tem ao menos uma etapa feita
+      if (this.superAttack.doneSteps > 0){
+        
+        this.superAttack.timer -= frameTime.secondsPassed
+        
+        if (this.superAttack.timer <= 0){
+          this.superAttack.sequence = []
+          this.superAttack.nextInput = ""
+          this.superAttack.doneSteps = 0
+          this.superAttack.timer = 1
+        }
+        
+        if (p1Stick.direction == this.superAttack.nextInput || p1Stick.direction == "down" + this.superAttack.nextInput){
+          
+          this.superAttack.nextInput = this.superAttack.sequence[this.superAttack.doneSteps + 1]
+        this.superAttack.doneSteps += 1
+        }
+        
+        if (this.superAttack.doneSteps > 2 && this.superAttack.meter == 70){
+          if (isButtonPressed(5) && this.superAttack.timer > 0){
+            
+            this.superAttack.timer = 1
+            this.superAttack.sequence = []
+            this.superAttack.nextInput = ""
+            this.superAttack.doneSteps = 0
+            this.changeState(this.states.superCombo)
+          }
+        }
+      }
+    }
+    
+    closeAttackReaction(damage, slide, damageState, meterBuild){
+      this.superAttack.meter += meterBuild
       playRandomPunchSound()
       this.opponent.changeState(damageState)
       this.opponent.hp -= damage
@@ -198,6 +292,7 @@ hitClash(opponent, atkState){
    }
    //verifica gilete
    else if (isButtonPressed(2) && isButtonPressed(5)){
+     this.superAttack.meter += 4
      this.changeState(this.states.gilete)
    }
    
@@ -224,6 +319,7 @@ hitClash(opponent, atkState){
      this.changeState(this.states.jump)
    }
   if (this.doingMagicInput()){
+    this.superAttack.meter += 4
     this.changeState(this.states.magic)
   }
   }
@@ -265,6 +361,7 @@ hitClash(opponent, atkState){
     }
   }
   hurtFallInit = () => {
+    gravity = 4100
     this.fallDuration = Math.round(((Math.random() * 0.7) + 1) * 1000)
     this.angle = 0
     this.groundPosition = 610
@@ -335,38 +432,53 @@ hitClash(opponent, atkState){
      this.changeState(this.states.kick)
    }
    if (this.doingMagicInput()){
+     this.superAttack.meter += 4
     this.changeState(this.states.magic)
   }
   }
   
   gileteInit = () => {
+    this.hitStruck = false
     this.angle = 0
     this.currentAir = 0
     this.airTimer = 0.1
     this.velocityY = -1200
     this.velocityX = -60 * this.currentDirection
-    this.gileteBox = this.getGileteBox()
     soundFuncs.playSound(woosh, 1.5, { volume: 1, loop: false })
   }
   gileteUpdate = () => {
     this.angle += 10 * this.currentDirection * frameTime.secondsPassed
-    if (Math.abs(this.angle) < Math.PI){
-    this.gileteBox[1] -= 1200 * frameTime.secondsPassed
-    }
-    else {
-      if (Math.abs(this.angle) < 4.5){
-      this.gileteBox[0] -= 190 * -this.currentDirection * frameTime.secondsPassed
-      }
-      else{
-      for (let x = 0; x < 3; x++){
-      this.gileteBox[x] = 0
-      }
-    }
-   }
     
     if (!this.notOnGround()){
       this.angle = 0
       this.changeState(this.states.idle)
+    }
+  }
+  
+  superInit = () => {
+    this.angle = 0
+    this.groundPosition = 519
+    this.velocityX = -500 * this.currentDirection
+    this.superAttack.hitCount = 0
+    this.superAttack.kickSpinDelay = 0.07
+    this.superAttack.freezeDelay = 0.6
+  }
+  superUpdate = () => {
+    this.superAttack.kickSpinDelay -= frameTime.secondsPassed
+    
+    if (this.superAttack.kickSpinDelay < 0){
+      this.hitStruck = false
+      this.invertDirection()
+      this.superAttack.kickSpinDelay = 0.07
+    }
+    
+    if (this.superAttack.hitCount > 0){
+      
+      if (this.opponent.lost == false){
+        this.opponent.changeState(this.opponent.states.hurtStand)
+      }
+      this.keepFightersClose(this.opponent)
+      this.opponent.hurtTimer = performance.now()
     }
   }
   
@@ -409,13 +521,13 @@ hitClash(opponent, atkState){
   }
   
   updateAttackCollided(frameTime){
-    if (this.currentState != this.states.punch && this.currentState != this.states.kick && this.currentState != this.states.gilete){
+    if (this.currentState != this.states.punch && this.currentState != this.states.kick && this.currentState != this.states.gilete && this.currentState != this.states.superCombo){
       return
     }
     
     const x1 = this.currentDirection == this.leftDirection ? this.positionX - this.currentState[0][this.currentFrame].adjusts[2] : this.positionX - this.currentState[0][this.currentFrame].adjusts[2]/1.9
     const y1 = this.positionY - this.currentState[0][this.currentFrame].adjusts[3]
-    const width1 = this.currentState[0][this.currentFrame].adjusts[0]
+    const width1 = this.currentState[0][this.currentFrame].adjusts[0] * 0.8
     const height1 = this.currentState[0][this.currentFrame].adjusts[1]
     
     const x2 = this.opponent.positionX - this.opponent.hurtBox[0]
@@ -427,17 +539,55 @@ hitClash(opponent, atkState){
       return
     }
     
-    if (this.currentState == this.states.gilete && !this.notLookingToOpponent() && this.opponent.currentState != this.opponent.states.hurtFall && rectsOverlap(this.gileteBox[0], this.gileteBox[1], this.gileteBox[2], this.gileteBox[3], x2, y2, width2, height2)){
+    if (this.currentState == this.states.superCombo && this.opponent.currentState != this.opponent.states.hurtFall){
+      
+      playRandomPunchSound(this.superAttack.hitCount)
+      this.opponent.hp -= 7
+      this.superAttack.hitCount += 1
+      
+      if (this.superAttack.hitCount == 1){
+        
+        this.superAttack.freezeDelay = 0.6
+        gravity = 0
+        this.superAttack.secondPhase = true
+        
+        this.velocityX = 0
+        this.velocityY = -150
+        
+        this.opponent.velocityX = 0
+        this.opponent.velocityY = -150
+      }
+      else if (this.superAttack.hitCount == 6){
+        gravity = 4100
+        
+        if (this.notLookingToOpponent()){ this.invertDirection() }
+        this.changeState(this.states.gilete)
+        this.superAttack.meter = -30
+        this.superAttack.secondPhase = false
+        //no fim do super combo antes do return, o hitStruck precisar ser false para permitir a gilete finalizadora
+        this.hitStruck = false
+        return
+      }
+      
+      //aqui serve para os outros hits do super combo
+      this.hitStruck = true
+      return
+    }
+    
+    if (this.currentState == this.states.gilete && !this.notLookingToOpponent() && this.opponent.currentState != this.opponent.states.hurtFall){
       
       if (!this.hitClash(this.opponent, this.opponent.states.gilete)){
-      this.closeAttackReaction(70, 51000, this.opponent.states.hurtFall)
+      
+      this.closeAttackReaction(25, 51000, this.opponent.states.hurtFall, 30)
     }
     else {
       playRandomPunchSound()
       this.opponent.changeState(this.opponent.states.hurtFall)
       this.changeState(this.states.hurtFall)
-      this.opponent.hp -= 70
-      this.hp -= 70
+      this.opponent.hp -= 25
+      this.opponent.superAttack.meter += 30
+      this.hp -= 25
+      this.superAttack.meter += 30
       if (this.opponent.hp < 0){ this.opponent.hp = 0 }
       if (this.hp < 0){ this.hp = 0 }
       
@@ -462,14 +612,16 @@ hitClash(opponent, atkState){
     if (this.currentState == this.states.kick){
       
       if (!this.hitClash(this.opponent, this.opponent.states.kick)){
-      this.closeAttackReaction(50, 51000, this.opponent.states.hurtFall)
+      this.closeAttackReaction(15, 51000, this.opponent.states.hurtFall, 20)
     }
     else {
       playRandomPunchSound()
       this.opponent.changeState(this.opponent.states.hurtFall)
       this.changeState(this.states.hurtFall)
-      this.opponent.hp -= 50
-      this.hp -= 50
+      this.opponent.hp -= 15
+      this.opponent.superAttack.meter += 20
+      this.hp -= 15
+      this.superAttack.meter += 20
       if (this.opponent.hp < 0){ this.opponent.hp = 0 }
       if (this.hp < 0){ this.hp = 0 }
       
@@ -488,7 +640,7 @@ hitClash(opponent, atkState){
     
     if (this.currentState == this.states.punch){
       if (!this.hitClash(this.opponent, this.opponent.states.punch)){
-      this.closeAttackReaction(30, 43000, this.opponent.states.hurtStand)
+      this.closeAttackReaction(11, 43000, this.opponent.states.hurtStand, 15)
       if (this.opponent.currentState == this.opponent.states.hurtStand){
       this.opponent.states.hurtStand[1]()
       }
@@ -497,8 +649,10 @@ hitClash(opponent, atkState){
       playRandomPunchSound()
       this.opponent.changeState(this.opponent.states.hurtStand)
       this.changeState(this.states.hurtStand)
-      this.opponent.hp -= 30
-      this.hp -= 30
+      this.opponent.hp -= 11
+      this.opponent.superAttack.meter += 15
+      this.hp -= 11
+      this.superAttack.meter += 15
       if (this.opponent.hp < 0){ this.opponent.hp = 0 }
       if (this.hp < 0){ this.hp = 0 }
       
@@ -564,7 +718,7 @@ hitClash(opponent, atkState){
       this.positionX = 40
     }
     if (this.notOnGround()){
-    this.velocityY += 4100 * frameTime.secondsPassed
+    this.velocityY += gravity * frameTime.secondsPassed
     }
     if (this.positionY > this.groundPosition){
       this.positionY = this.groundPosition
@@ -577,6 +731,14 @@ hitClash(opponent, atkState){
     }
     else {
       this.lost = false
+    }
+    
+    if (this.superAttack.meter >= 70){
+      this.superAttack.meter = 70
+      this.meterColor = blueMeter
+    }
+    else {
+      this.meterColor = fullMeter
     }
     
     if (this.firedMagic == true){
@@ -600,12 +762,14 @@ hitClash(opponent, atkState){
       this.offsetValue = Math.abs(Math.floor(this.velocityX / 1.5))
     }
     
+    this.updateAttackCollided(frameTime)
+    
     //chama a update do state atual se esse state o tiver
     if (this.currentState[2]){
       this.currentState[2]()
     }
-    this.updateAttackCollided(frameTime)
     this.updateAir(frameTime)
+    this.updateSuperHistory()
     this.checkWin(frameTime)
   }
   
@@ -619,6 +783,11 @@ hitClash(opponent, atkState){
   this.context.translate(centerX, centerY); // Move o ponto de origem
   this.context.rotate(this.angle); // Aplica a rotação
   this.context.scale(this.currentDirection, 1); // Mantém a escala horizontal correta
+  
+  if (this.currentState == this.states.superCombo){
+    this.context.shadowBlur = 40
+    this.context.shadowColor = "cyan"
+  }
 
   // Desenha a imagem deslocada para alinhar corretamente
   this.context.drawImage(
@@ -650,7 +819,39 @@ export class SingleFighter extends VsFighter{
   this.opponent = []
   this.score = 0
   this.shouldOffset = false
-  this.offsetValue = 0  
+  this.receivingSuper = undefined
+  this.offsetValue = 0
+  this.states.superCombo[2] = this.superUpdate
+  }
+  
+  superUpdate = () => {
+    this.superAttack.kickSpinDelay -= frameTime.secondsPassed
+    
+    if (this.superAttack.kickSpinDelay < 0){
+      this.hitStruck = false
+      this.invertDirection()
+      this.superAttack.kickSpinDelay = 0.07
+    }
+    
+    if (this.superAttack.hitCount > 0){
+      
+      this.superAttack.durationTimer -= frameTime.secondsPassed
+      
+      if (this.superAttack.durationTimer < 0){
+        this.superAttack.durationTimer = 0
+        gravity = 4100
+        this.changeState(this.states.gilete)
+        this.receivingSuper = undefined
+        return
+      }
+      
+      if (this.receivingSuper.lost == false){
+        this.receivingSuper.changeState(this.receivingSuper.states.hurtStand)
+      }
+  
+      this.keepFightersClose(this.receivingSuper)
+      this.receivingSuper.hurtTimer = performance.now()
+    }
   }
   
   notLookingToOpponent(opponent){
@@ -673,7 +874,7 @@ export class SingleFighter extends VsFighter{
       this.positionX = 40
     }
     if (this.notOnGround()){
-    this.velocityY += 4100 * frameTime.secondsPassed
+    this.velocityY += gravity * frameTime.secondsPassed
     }
     if (this.positionY > this.groundPosition){
       this.positionY = this.groundPosition
@@ -733,7 +934,7 @@ export class SingleFighter extends VsFighter{
   }
   
   updateAttackCollided(frameTime){
-  if (this.currentState != this.states.punch && this.currentState != this.states.kick && this.currentState != this.states.gilete){
+  if (this.currentState != this.states.punch && this.currentState != this.states.kick && this.currentState != this.states.gilete  && this.currentState != this.states.superCombo){
     return
   }
   
@@ -749,10 +950,62 @@ export class SingleFighter extends VsFighter{
     
     if (this.positionY - Math.round(this.currentState[0][this.currentFrame].adjusts[3]/1.4) > opponent.positionY || this.positionY < opponent.positionY - Math.round(opponent.hurtBox[3]/1.5)) { continue }
     
-    // Verifica a colisão específica do gilete
-    if (this.currentState == this.states.gilete && opponent.currentState != opponent.states.hurtFall && rectsOverlap(this.gileteBox[0], this.gileteBox[1], this.gileteBox[2], this.gileteBox[3], opponent.positionX - opponent.hurtBox[0], opponent.positionY - opponent.hurtBox[1], opponent.hurtBox[2], opponent.hurtBox[3])){
+    // verifica super superCombo
+    
+    if (this.currentState == this.states.superCombo && opponent.currentState != opponent.states.hurtFall){
       
-      playRandomPunchSound();
+      playRandomPunchSound(this.superAttack.hitCount)
+      
+      if (opponent.isGiant == true) {
+        opponent.changeState(opponent.states.hurtStand)
+        
+        opponent.hp -= 1
+        this.superAttack.hitCount += 1
+        
+        if (this.receivingSuper == undefined){
+          this.receivingSuper = opponent
+          this.superAttack.durationTimer = 0.9
+        }
+      }
+      else {
+        opponent.hp = 0
+        this.score += 1
+      }
+      
+      if (this.superAttack.hitCount == 1){
+
+        gravity = 0
+        this.superAttack.secondPhase = true
+        this.velocityX = 0
+        this.velocityY = -150
+        
+        opponent.velocityX = 0
+      }
+      else if (this.superAttack.hitCount == 6){
+        gravity = 4100
+        
+        if (this.notLookingToOpponent(opponent)){ this.invertDirection() }
+        this.superAttack.durationTimer = 0
+        this.changeState(this.states.gilete)
+        this.superAttack.meter = -30
+        this.receivingSuper = undefined
+        this.superAttack.secondPhase = false
+        //no fim do super combo antes do continue, o hitStruck precisar ser false para permitir a gilete finalizadora
+        this.hitStruck = false
+        continue
+      }
+      
+      //aqui serve para os outros hits do super combo
+      this.hitStruck = true
+      continue
+    }
+    
+    // Verifica a colisão específica do gilete
+    if (this.currentState == this.states.gilete && opponent.currentState != opponent.states.hurtFall){
+      
+      playRandomPunchSound()
+      this.superAttack.meter += 30
+      
       if (opponent.isGiant) { opponent.changeState(opponent.states.hurtStand) }
       else { opponent.changeState(opponent.states.hurtFall) }
       
@@ -776,7 +1029,9 @@ export class SingleFighter extends VsFighter{
 
     if (this.currentState == this.states.kick){
       
-      playRandomPunchSound();
+      playRandomPunchSound()
+      this.superAttack.meter += 20
+      
       if (opponent.isGiant) { opponent.changeState(opponent.states.hurtStand) }
       else { opponent.changeState(opponent.states.hurtFall) }
       opponent.hp -= 2;
@@ -795,7 +1050,9 @@ export class SingleFighter extends VsFighter{
 
     if (this.currentState == this.states.punch){
       
-      playRandomPunchSound();
+      playRandomPunchSound()
+      this.superAttack.meter += 15
+      
       opponent.changeState(opponent.states.hurtStand);
       opponent.hp -= 1;
 
@@ -857,12 +1114,14 @@ export class VsModeBot extends VsFighter{
     }
   }
   
-  invertDirection(){
-    if (this.currentDirection == this.leftDirection)
-    { this.currentDirection = this.rightDirection }
-    
-    else if (this.currentDirection == this.rightDirection)
-    { this.currentDirection = this.leftDirection }
+  updateSuperHistory(){
+    if (!this.notOnGround()){
+     const rndm = Math.floor(Math.random() * 500)
+      if (rndm < 1){
+        this.changeState(this.states.superCombo)
+        this.superAttack.meter = 0
+      }
+    }
   }
   
   idleUpdate = () => {
@@ -895,6 +1154,7 @@ export class VsModeBot extends VsFighter{
       if (rndm < 4){
         if (!this.lookingToOpponent){ this.invertDirection() }
         this.changeState(this.states.magic)
+        this.superAttack.meter += 4
        }
       }
     }
@@ -932,6 +1192,7 @@ export class VsModeBot extends VsFighter{
        if (rndm < 2){
          if (!this.lookingToOpponent){ this.invertDirection() }
          this.changeState(this.states.magic)
+         this.superAttack.meter += 4
       }
      }
     
@@ -951,6 +1212,7 @@ export class VsModeBot extends VsFighter{
        if (rndm < 2){
          if (!this.lookingToOpponent){ this.invertDirection() }
          this.changeState(this.states.magic)
+         this.superAttack.meter += 4
       }
      }
     
@@ -970,7 +1232,11 @@ export class VsModeBot extends VsFighter{
         switch (randomAttack){
           case 1: this.changeState(this.states.punch); break
           case 2: this.changeState(this.states.kick); break
-          case 3: if (!this.notOnGround()){ this.changeState(this.states.gilete) } else { this.changeState(this.states.punch) }; break      
+          case 3: if (!this.notOnGround()){
+            this.changeState(this.states.gilete)
+            this.superAttack.meter += 4
+            
+          } else { this.changeState(this.states.punch) }; break      
         }
       }
     }
@@ -984,6 +1250,10 @@ export class VsModeBot extends VsFighter{
       return
     }
     
+    if (this.currentState == this.states.hurtFall || this.currentState == this.states.hurtStand){
+      return
+    }
+    
     this.botFightStates.dashDanceFooling()
   }
   updateNormalBehaviour(){
@@ -991,6 +1261,11 @@ export class VsModeBot extends VsFighter{
       return
     }
     if (this.opponent.currentState == this.opponent.states.hurtFall || this.opponent.currentState == this.opponent.states.hurtStand){
+      return
+    }
+    
+    if (this.currentState == this
+    .states.hurtFall || this.currentState == this.states.hurtStand){
       return
     }
     this.currentFightState()
@@ -1009,6 +1284,5 @@ export class VsModeBot extends VsFighter{
     } else {
       this.updateNormalBehaviour()
     }
-    
   }
 }

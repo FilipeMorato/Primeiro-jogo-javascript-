@@ -4,6 +4,7 @@ import { drawText } from "./DrawText.js"
 import { stagesSprites, trofeuSprite, laraSprites } from "./sprites.js"
 import { battleMusics, winSound } from "./musics.js"
 import { Magic, EnemyMagic } from "./Magic.js"
+import * as supr from "./superVfx.js"
 import { MenuScene } from "./MenuScene.js"
 import { changeScene } from "./SceneManager.js"
 import { PunchCpu, Kicker } from "./CPU.js"
@@ -24,6 +25,8 @@ export class ActionScene {
     
     this.entities = []
     
+    this.currentVfx = undefined
+    
     soundFuncs.playSound(battleMusics[this.musicRandomizer], 1, { volume: 0.5, loop: true })
     menuBtn.style.display = "none"
   }
@@ -32,6 +35,14 @@ export class ActionScene {
   }
   addEnemyMagic(direction, x, y, opponent){
     this.entities.push(new EnemyMagic(direction, x, y, opponent))
+  }
+  
+  addSuperVfx(fighter){
+    const vfx = new supr.Initial(fighter.positionX, fighter.positionY - 255)
+    
+    this.entities.push(vfx)
+    
+    return vfx
   }
   
 }
@@ -131,9 +142,45 @@ export class SceneVs extends ActionScene {
   }
   
   update(frameTime){
-    this.fighter1.update(frameTime)
+    if (this.fighter1.superAttack.freezeDelay > 0){
+      
+      //adiciona o vfx incial se estiver no inicio do delay
+      if (this.fighter1.superAttack.freezeDelay == 0.6  && this.fighter1.superAttack.secondPhase == false){
+        this.currentVfx = this.addSuperVfx(this.fighter1)
+      }
+      
+      this.currentVfx.update(frameTime)
+      
+      this.fighter1.superAttack.freezeDelay -= frameTime.secondsPassed
+      
+      if (this.fighter1.superAttack.freezeDelay <= 0.05){
+        this.fighter1.superAttack.freezeDelay = 0
+      }
+      else {
+        return
+      }
+    }
+    
+    if (this.fighter2.superAttack.freezeDelay > 0){
+      
+      //adiciona o vfx incial se estiver no inicio do delay
+      if (this.fighter2.superAttack.freezeDelay == 0.6 && this.fighter2.superAttack.secondPhase == false){
+        this.currentVfx = this.addSuperVfx(this.fighter2)
+      }
+      this.currentVfx.update(frameTime)
+      
+      this.fighter2.superAttack.freezeDelay -= frameTime.secondsPassed
+      
+      if (this.fighter2.superAttack.freezeDelay <= 0.05){
+        this.fighter2.superAttack.freezeDelay = 0
+      }
+      else {
+        return
+      }
+    }
+    
     this.fighter2.update(frameTime)
-    //console.log(this.fighter2.lookingToOpponent)
+    this.fighter1.update(frameTime)
     
     if (this.entities.length > 0){
       for (let entity of this.entities){
@@ -160,7 +207,18 @@ export class SceneVs extends ActionScene {
   }
   
   draw(){
+    if (this.fighter1.currentState == this.fighter1.states.superCombo || this.fighter2.currentState == this.fighter2.states.superCombo){
+      
+      this.context.globalAlpha = 0.7
+      
+      this.context.drawImage(stagesSprites[this.stageRandomizer], 0, 0, this.canvas.width, this.canvas.height)
+      
+      this.context.globalAlpha = 1
+    }
+    else {
     this.context.drawImage(stagesSprites[this.stageRandomizer], 0, 0, this.canvas.width, this.canvas.height)
+    }
+    
     this.fighter1.draw()
     this.fighter2.draw()
     
@@ -170,8 +228,10 @@ export class SceneVs extends ActionScene {
       }
     }
     
+    //contorno branco das healthbars
     this.context.strokeRect(70, 20, 400, 40)
     this.context.strokeRect(500, 20, 400, 40)
+    
     
     this.context.fillStyle = "lime"
    // hp player1
@@ -181,6 +241,17 @@ export class SceneVs extends ActionScene {
     
     this.drawTrophys(this.context, this.f1wins, 350, 70)
     this.drawTrophys(this.context, this.f2wins, 490, 70)
+    
+    
+    //por ultimo desenha o contorno das barras dos super combos e as barras
+    this.context.strokeRect(310, 480, 78, 25)
+    this.context.strokeRect(510, 480, 78, 25)
+    
+    this.context.fillStyle = this.fighter1.meterColor
+    this.context.fillRect(314, 484, this.fighter1.superAttack.meter, 17)
+   
+   this.context.fillStyle = this.fighter2.meterColor
+    this.context.fillRect(514, 484, this.fighter2.superAttack.meter, 17)
   }
   
   cleanClassInstance(){
@@ -258,6 +329,26 @@ export class SingleMode extends ActionScene {
   
   
   update(frameTime){
+    
+    if (this.player.superAttack.freezeDelay > 0){
+      
+      //adiciona o vfx incial se estiver no inicio do delay
+      if (this.player.superAttack.freezeDelay == 0.6  && this.player.superAttack.secondPhase == false){
+        this.currentVfx = this.addSuperVfx(this.player)
+      }
+      
+      this.currentVfx.update(frameTime)
+      
+      this.player.superAttack.freezeDelay -= frameTime.secondsPassed
+      
+      if (this.player.superAttack.freezeDelay <= 0.05){
+        this.player.superAttack.freezeDelay = 0
+      }
+      else {
+        return
+      }
+    }
+    
     if (this.player.lost){
       this.context.globalAlpha -= frameTime.secondsPassed
     }
@@ -329,8 +420,20 @@ export class SingleMode extends ActionScene {
 }
   
   draw(){
+    
+    if (this.player.currentState == this.player.states.superCombo){
+      
+      this.context.globalAlpha = 0.7
+      
+      this.context.drawImage(stagesSprites[this.stageRandomizer], this.stageX, 0, 960, 540)
+    this.drawInverseBackground()
+      
+      this.context.globalAlpha = 1
+    }
+    else {
     this.context.drawImage(stagesSprites[this.stageRandomizer], this.stageX, 0, 960, 540)
     this.drawInverseBackground()
+    }
     
     if (this.player.opponent.length > 0){
       for (let opponent of this.player.opponent){
@@ -354,6 +457,13 @@ export class SingleMode extends ActionScene {
     this.context.fillStyle = "black"
     this.context.fillRect(220, 83, 160, 35)
     drawText(this.context, this.grd, 30, "Score: " + this.player.score.toString(), 230, 110)
+    
+    
+    //por ultimo desenha o contorno da barra do super combo e a barra
+    this.context.strokeRect(310, 480, 78, 25)
+    
+    this.context.fillStyle = this.player.meterColor
+    this.context.fillRect(314, 484, this.player.superAttack.meter, 17)
   }
   
   cleanClassInstance(){

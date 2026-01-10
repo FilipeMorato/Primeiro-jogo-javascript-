@@ -34,6 +34,7 @@
       width: 50px;
       height: 50px;
       background-size: cover;
+      opacity: 0.5;
     }
   
     .mpArrow{
@@ -123,7 +124,7 @@
       background-image: url('punch.png');
       background-color: rgba(255, 0, 0, 1);
       top: 13%;
-      left: 25%;
+      left: 28%;
     }
     #kick1 {
       background-image: url('kick.png');
@@ -160,13 +161,31 @@
       background-image: url('punch.png');
       background-color: rgba(0, 0, 255, 1);
       top: 13%;
-      left: 61%;
+      left: 73%;
     }
     #kick2 {
       background-image: url('kick.png');
       background-color: rgba(0, 0, 255, 1);
       top: 13%;
-      left: 71%;
+      left: 60%;
+    }
+    
+    .stick{
+      all: unset;
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      opacity: 0.5;
+      background-size: cover;
+      background-image: url('analogic.png');
+    }
+    #stick1 {
+      top: 44%;
+      left: 5%;
+    }
+    #stick2 {
+      top: 44%;
+      left: 65%;
     }
     
   </style>
@@ -183,6 +202,9 @@
     
     <canvas id="canvas" width="960" height="540"></canvas>
   </div>
+  <div class="stick" id="stick2"></div>
+  <div class="stick" id="stick1"></div>
+  
    <div class="arrow" id="up"></div>
    <div class="arrow" id="right"></div>
    <div class="arrow" id="down"></div>
@@ -206,6 +228,7 @@
    
   <script type="module">
     import { hudCurrently, mpHudCurrently } from "./inputs.js"
+    import { p1Stick, p2Stick, threshold, updateStickCenter } from "./virtualJoystick.js"
   
     const canvas = document.getElementById('canvas');
     const menuButton = document.getElementById('menuBtn');
@@ -219,8 +242,8 @@
     function resizeButtonGroup(group, scale){
       if (hudCurrently.active == true){
         for (let button of group){
-          button.style.width = `${130 * scale}px`
-          button.style.height = `${130 * scale}px`
+          button.style.width = `${150 * scale}px`
+          button.style.height = `${150 * scale}px`
         }
       }
       if (mpHudCurrently.active == true){
@@ -250,7 +273,17 @@
       
       resizeButtonGroup(buttons, scale)
       resizeButtonGroup(mpButtons, scale)
-     // console.log(mpButtons[0].style.display == "none")
+      
+      p1Stick.element.style.width = `${300 * scale}px`
+      p1Stick.element.style.height = `${300 * scale}px`
+      
+      p2Stick.element.style.width = `${300 * scale}px`
+      p2Stick.element.style.height = `${300 * scale}px`
+      
+      updateStickCenter(p1Stick)
+      updateStickCenter(p2Stick)
+      
+      threshold.value = (p1Stick.element.offsetWidth / 2) / 9
     }
 
     window.addEventListener('resize', resizeCanvas);

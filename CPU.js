@@ -78,7 +78,7 @@ export class PunchCpu extends BaseFighter {
   }
   
   hurtStandUpdate = () => {
-    if (this.lost){
+    if (this.lost == true){
       this.changeState(this.states.hurtFall)
     }
     if (performance.now() > this.hurtTimer + 260){
@@ -154,10 +154,9 @@ export class PunchCpu extends BaseFighter {
     if (this.positionX - this.opponent.positionX > this.punchSprite.adjusts[1]/2 + this.opponent.hurtBox[2]/2){ return }
     if (this.positionY - this.currentState[0][this.currentFrame].adjusts[3] > this.opponent.positionY || this.positionY < this.opponent.positionY - this.opponent.hurtBox[3]) { return }
     
-    console.log("enemyHit")
     playRandomPunchSound()
       this.opponent.changeState(this.opponent.states.hurtStand)
-      this.opponent.hp -= 30
+      this.opponent.hp -= 24
       if (this.opponent.hp < 0){ this.opponent.hp = 0 }
       
       if (this.opponent.positionX < 43){
@@ -389,14 +388,14 @@ export class Kicker extends BaseFighter{
   updateAttackCollided(frameTime){
     if (this.hitStruck == true || !this.context){ return }
     if (this.currentState != this.states.kick){ return }
+    if (this.opponent.currentState == this.opponent.states.superCombo){ return }
     if (this.positionX <= this.opponent.positionX){ return }
     if (this.positionX - this.opponent.positionX > this.kickSprite.adjusts[1]/2 + this.opponent.hurtBox[2]/2){ return }
     if (this.positionY - this.currentState[0][this.currentFrame].adjusts[3] > this.opponent.positionY || this.positionY < this.opponent.positionY - this.opponent.hurtBox[3]) { return }
     
-    console.log("enemyHit")
     playRandomPunchSound()
       this.opponent.changeState(this.opponent.states.hurtFall)
-      this.opponent.hp -= 50
+      this.opponent.hp -= 30
       if (this.opponent.hp < 0){ this.opponent.hp = 0 }
       
       if (this.opponent.positionX < 43){

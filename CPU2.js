@@ -329,7 +329,6 @@ export class Giant extends PunchCpu{
     if (this.positionX - this.opponent.positionX > this.kickSprite.adjusts[1] + this.opponent.hurtBox[2]/2){ return }
     if (this.positionY - (this.currentState[0][this.currentFrame].adjusts[3] * 2) > this.opponent.positionY || this.positionY < this.opponent.positionY - this.opponent.hurtBox[3]) { return }
     
-    console.log("enemyHit")
     playRandomPunchSound()
       this.opponent.changeState(this.opponent.states.hurtFall)
       this.opponent.hp -= 70

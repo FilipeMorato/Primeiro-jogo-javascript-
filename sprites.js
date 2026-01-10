@@ -79,6 +79,9 @@ export const stagesSprites = [
 export const magicSprite = new Image()
 magicSprite.src = "./magic.png"
 
+export const trailSprite = new Image()
+trailSprite.src = "./trail.png"
+
 export const trofeuSprite = new Image()
 trofeuSprite.src = "./trofeu.png"
 

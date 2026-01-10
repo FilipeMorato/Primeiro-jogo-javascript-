@@ -112,7 +112,8 @@ function filipeSpritesToInstance(instance){
       win: [[instance.winSprite], instance.winInit],
       sad: [[instance.sadSprite], instance.sadInit],
       jump: [[instance.jumpSprite], instance.jumpInit, instance.jumpUpdate],
-      gilete: [[instance.kick1Sprite], instance.gileteInit, instance.gileteUpdate]
+      gilete: [[instance.kick1Sprite], instance.gileteInit, instance.gileteUpdate],
+      superCombo: [[instance.kick1Sprite], instance.superInit, instance.superUpdate]
     }
 }
 
@@ -144,7 +145,8 @@ function laraSpritesToInstance(instance){
       win: [[instance.winSprite], instance.winInit],
       sad: [[instance.sadSprite], instance.sadInit],
       jump: [[instance.jumpSprite], instance.jumpInit, instance.jumpUpdate],
-      gilete: [[instance.kick1Sprite], instance.gileteInit, instance.gileteUpdate]
+      gilete: [[instance.kick1Sprite], instance.gileteInit, instance.gileteUpdate],
+      superCombo: [[instance.kick1Sprite], instance.superInit, instance.superUpdate]
     }
 }
 
@@ -176,7 +178,8 @@ function aneSpritesToInstance(instance){
       win: [[instance.winSprite], instance.winInit],
       sad: [[instance.sadSprite], instance.sadInit],
       jump: [[instance.jumpSprite], instance.jumpInit, instance.jumpUpdate],
-      gilete: [[instance.kick1Sprite], instance.gileteInit, instance.gileteUpdate]
+      gilete: [[instance.kick1Sprite], instance.gileteInit, instance.gileteUpdate],
+      superCombo: [[instance.kick1Sprite], instance.superInit, instance.superUpdate]
     }
 }
 
@@ -208,6 +211,7 @@ function pedroSpritesToInstance(instance){
       win: [[instance.winSprite], instance.winInit],
       sad: [[instance.sadSprite], instance.sadInit],
       jump: [[instance.jumpSprite], instance.jumpInit, instance.jumpUpdate],
-      gilete: [[instance.kick2Sprite], instance.gileteInit, instance.gileteUpdate]
+      gilete: [[instance.kick2Sprite], instance.gileteInit, instance.gileteUpdate],
+      superCombo: [[instance.kick2Sprite], instance.superInit, instance.superUpdate]
     }
 }

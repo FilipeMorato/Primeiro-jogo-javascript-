@@ -44,7 +44,7 @@ this.handleClick = (event) => {
       
       this.canvas.addEventListener("click", this.handleClick)
 
-soundFuncs.playSound(this.menumusic, 1, { volume: 0.6, loop: true })
+soundFuncs.playSound(this.menumusic, 1, { volume: 0.5, loop: true })
       menuBtn.style.display = "none"
     }
     
@@ -58,7 +58,7 @@ loadFireFrames() {
   }    
 
 update(frameTime){
-    if (frameTime.previous > this.animationFire + 90){
+    if (frameTime.previous > this.animationFire + 55){
         this.animationFire = frameTime.previous
         this.currentFrame++
         

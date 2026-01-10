@@ -1,9 +1,13 @@
-const hudState = [false, false, false, false, false, false]
+import { p1Stick, p2Stick, handleStickTouch } from "./virtualJoystick.js"
+
+//a sub-array são as ordens para atualizar os hud states corretamente
+export const hudState = [[false, false, false, false, false, false], [4, 5]]
 export const hudCurrently = {
   active: false
 }
 
-const mpHudState = [false, false, false, false, false, false, false, false, false, false, false, false]
+export const mpHudState = [[false, false, false, false, false, false, false, false, false, false, false, false], [4, 5, 10, 11]]
+
 export const mpHudCurrently = {
   active: false
 }
@@ -78,7 +82,7 @@ function handleMpKeyUp(e) {
 }
 
 function getHudState() {
-  return hudState
+  return hudState[0]
 }
 
 export function isButtonPressed(index){
@@ -92,7 +96,7 @@ else {
 }
 
 export function isMpButtonPressed(index){
-if (mpHudState[index] == true || mpKeysState[index] == true) {
+if (mpHudState[0][index] == true || mpKeysState[index] == true) {
   return true
 }
 else {
@@ -101,26 +105,14 @@ else {
 }
 
 const hud = [
-  document.querySelector("#up"),
-  document.querySelector("#right"),
-  document.querySelector("#down"),
-  document.querySelector("#left"),
   document.querySelector("#punch"),
   document.querySelector("#kick")
 ]
 
 //mp significa multiplayer
 const mpHud = [
-  document.querySelector("#up1"),
-  document.querySelector("#right1"),
-  document.querySelector("#down1"),
-  document.querySelector("#left1"),
   document.querySelector("#punch1"),
   document.querySelector("#kick1"),
-  document.querySelector("#up2"),
-  document.querySelector("#right2"),
-  document.querySelector("#down2"),
-  document.querySelector("#left2"),
   document.querySelector("#punch2"),
   document.querySelector("#kick2")
 ]
@@ -128,13 +120,14 @@ const mpHud = [
 // Funções para lidar com eventos de toque (touch)
 function handleTouchStart(i, hudStateArray) {
   return () => { // Retorna uma função para cada índice 'i'
-    hudStateArray[i] = true
+   
+    hudStateArray[0][hudStateArray[1][i]] = true
   }
 }
 
 function handleTouchEnd(i, hudStateArray) {
   return () => { // Retorna uma função para cada índice 'i'
-    hudStateArray[i] = false
+    hudStateArray[0][hudStateArray[1][i]] = false
   }
 }
 
@@ -152,6 +145,15 @@ export function setUpSingleHud() {
     hud[i].style.display = "block"
   }
   hudCurrently.active = true
+  
+ //setup p1 stick
+  p1Stick.element.ontouchstart = (e) => handleStickTouch(e, p1Stick)
+    p1Stick.element.ontouchmove = (e) => handleStickTouch(e, p1Stick)
+    p1Stick.element.ontouchend = () => {
+      p1Stick.direction = ""
+      hudState[0].fill(false, 0, 4) // Reseta direções (0 a 3)
+    }
+    if (isMobileBool == true) p1Stick.element.style.display = "block"
 }
 
 export function disableSingleHud() {
@@ -167,6 +169,13 @@ export function disableSingleHud() {
     if (isMobileBool == false) { continue }
     hud[i].style.display = "none"
   }
+  
+  //clear p1 stick
+  p1Stick.element.ontouchstart = null
+    p1Stick.element.ontouchmove = null
+    p1Stick.element.ontouchend = null
+    p1Stick.element.style.display = "none";
+  
   hudCurrently.active = false
 }
 
@@ -183,6 +192,20 @@ export function setUpMpHud() {
     if (isMobileBool == false) { continue }
     mpHud[i].style.display = "block"
   }
+  
+  // Setup Joysticks P1 e P2
+  [p1Stick, p2Stick].forEach((stick, index) => {
+      stick.element.ontouchstart = (e) => handleStickTouch(e, stick)
+      stick.element.ontouchmove = (e) => handleStickTouch(e, stick)
+      stick.element.ontouchend = () => {
+        stick.direction = ""
+        // Se for p1 reseta indices 0-3, se for p2 reseta 6-9
+        const offset = index === 0 ? 0 : 6
+        mpHudState[0].fill(false, offset, offset + 4)
+      }
+      if (isMobileBool == true) stick.element.style.display = "block"
+  })
+  
   mpHudCurrently.active = true
 }
 
@@ -199,6 +222,15 @@ export function disableMpHud() {
     if (isMobileBool == false) { continue }
     mpHud[i].style.display = "none"
   }
+  
+  // limpar joysticks P1 e P2
+  [p1Stick, p2Stick].forEach((stick, index) => {
+      stick.element.ontouchstart = null
+      stick.element.ontouchmove = null
+      stick.element.ontouchend = null
+      stick.element.style.display = "none"
+  })
+  
   mpHudCurrently.active = false
 }
 

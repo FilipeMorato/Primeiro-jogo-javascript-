@@ -51,6 +51,7 @@ export class Magic{
       }
       
       opponent.hp -= damage
+      opponent.opponent.superAttack.meter += 15
       if (opponent.hp <= 0){ 
         opponent.opponent.score += 1
         if (opponent.opponent.score > 100) {opponent.opponent.score = 100}
@@ -66,7 +67,7 @@ export class Magic{
   
   updateActive = (frameTime) => {
     if (this.opponent.length == undefined){
-      this.checkStruck(this.opponent, 30)
+      this.checkStruck(this.opponent, 11)
       
     }  else {
       
@@ -96,7 +97,7 @@ export class Magic{
   }
   
   draw(context){
-    if (this.alpha < 0.1){
+    if (this.alpha < 0.1 || this.currentState == null){
      return
     }
     context.save()
@@ -125,7 +126,7 @@ export class EnemyMagic extends Magic{
     super(direction, x, y, opponent)
     this.direction = direction
     this.opponent = opponent
-    this.damage = 30
+    this.damage = 24
     
     this.states = {
       active: [[magicSprite], this.updateActive],

@@ -1,5 +1,7 @@
 import { VsFighter } from "./Fighter.js"
 import { isMpButtonPressed } from "./inputs.js"
+import { p1Stick, p2Stick } from "./virtualJoystick.js"
+import { frameTime } from "./Main.js"
 
 export class LeftHudFighter extends VsFighter{
     constructor(context, x, y, addMagic, name){
@@ -10,6 +12,56 @@ export class LeftHudFighter extends VsFighter{
       
       this.currentState = this.states.idle
     }
+    
+    updateSuperHistory(){
+      //esse if é para caso nenhuma etapa da sequencia do super estiver feita ainda
+      if (this.superAttack.doneSteps == 0){
+        if (p1Stick.direction == "downleft" || p1Stick.direction == "left"){
+          
+          this.superAttack.sequence = ["downleft", "downright", "downleft", "downright"]
+           this.superAttack.nextInput = "right"
+           this.superAttack.doneSteps += 1
+        }
+        else if (p1Stick.direction == "downright" || p1Stick.direction == "right"){
+          
+          this.superAttack.sequence = ["downright", "downleft", "downright", "downleft"]
+        this.superAttack.nextInput = "left"
+        this.superAttack.doneSteps += 1
+      }
+      return
+    }
+      
+      //esse if é para depois que ja tem ao menos uma etapa feita
+      if (this.superAttack.doneSteps > 0){
+        
+        this.superAttack.timer -= frameTime.secondsPassed
+        
+        if (this.superAttack.timer <= 0){
+          this.superAttack.sequence = []
+          this.superAttack.nextInput = ""
+          this.superAttack.doneSteps = 0
+          this.superAttack.timer = 1
+        }
+        
+        if (p1Stick.direction == this.superAttack.nextInput || p1Stick.direction == "down" + this.superAttack.nextInput){
+          
+          this.superAttack.nextInput = this.superAttack.sequence[this.superAttack.doneSteps + 1]
+        this.superAttack.doneSteps += 1
+        }
+        
+        if (this.superAttack.doneSteps > 2 && this.superAttack.meter == 70){
+          if (isMpButtonPressed(5) && this.superAttack.timer > 0){
+            
+            this.superAttack.timer = 1
+            this.superAttack.sequence = []
+            this.superAttack.nextInput = ""
+            this.superAttack.doneSteps = 0
+            this.changeState(this.states.superCombo)
+          }
+        }
+      }
+    }
+    
    doingMagicInput(){
     if (this.firedMagic == true){ return }
   
@@ -43,6 +95,7 @@ export class LeftHudFighter extends VsFighter{
    }
    //verifica gilete
    else if (isMpButtonPressed(2) && isMpButtonPressed(5)){
+     this.superAttack.meter += 4
      this.changeState(this.states.gilete)
    }
    
@@ -65,6 +118,7 @@ export class LeftHudFighter extends VsFighter{
      this.changeState(this.states.jump)
    }
   if (this.doingMagicInput()){
+    this.superAttack.meter += 4
     this.changeState(this.states.magic)
   }
   }
@@ -80,6 +134,7 @@ export class LeftHudFighter extends VsFighter{
      this.changeState(this.states.kick)
    }
    if (this.doingMagicInput()){
+     this.superAttack.meter += 4
     this.changeState(this.states.magic)
   }
   }
@@ -120,6 +175,56 @@ export class RightHudFighter extends VsFighter{
       
       this.currentState = this.states.idle
     }
+    
+    updateSuperHistory(){
+      //esse if é para caso nenhuma etapa da sequencia do super estiver feita ainda
+      if (this.superAttack.doneSteps == 0){
+        if (p2Stick.direction == "downleft" || p2Stick.direction == "left"){
+          
+          this.superAttack.sequence = ["downleft", "downright", "downleft", "downright"]
+           this.superAttack.nextInput = "right"
+           this.superAttack.doneSteps += 1
+        }
+        else if (p2Stick.direction == "downright" || p2Stick.direction == "right"){
+          
+          this.superAttack.sequence = ["downright", "downleft", "downright", "downleft"]
+        this.superAttack.nextInput = "left"
+        this.superAttack.doneSteps += 1
+      }
+      return
+    }
+      
+      //esse if é para depois que ja tem ao menos uma etapa feita
+      if (this.superAttack.doneSteps > 0){
+        
+        this.superAttack.timer -= frameTime.secondsPassed
+        
+        if (this.superAttack.timer <= 0){
+          this.superAttack.sequence = []
+          this.superAttack.nextInput = ""
+          this.superAttack.doneSteps = 0
+          this.superAttack.timer = 1
+        }
+        
+        if (p2Stick.direction == this.superAttack.nextInput || p2Stick.direction == "down" + this.superAttack.nextInput){
+          
+          this.superAttack.nextInput = this.superAttack.sequence[this.superAttack.doneSteps + 1]
+        this.superAttack.doneSteps += 1
+        }
+        
+        if (this.superAttack.doneSteps > 2 && this.superAttack.meter == 70){
+          if (isMpButtonPressed(11) && this.superAttack.timer > 0){
+            
+            this.superAttack.timer = 1
+            this.superAttack.sequence = []
+            this.superAttack.nextInput = ""
+            this.superAttack.doneSteps = 0
+            this.changeState(this.states.superCombo)
+          }
+        }
+      }
+    }
+    
    doingMagicInput(){
     if (this.firedMagic == true){ return }
   
@@ -153,6 +258,7 @@ export class RightHudFighter extends VsFighter{
    }
    //verifica gilete
    else if (isMpButtonPressed(8) && isMpButtonPressed(11)){
+     this.superAttack.meter += 4
      this.changeState(this.states.gilete)
    }
    
@@ -175,6 +281,7 @@ export class RightHudFighter extends VsFighter{
      this.changeState(this.states.jump)
    }
   if (this.doingMagicInput()){
+    this.superAttack.meter += 4
     this.changeState(this.states.magic)
   }
   }
@@ -190,6 +297,7 @@ export class RightHudFighter extends VsFighter{
      this.changeState(this.states.kick)
    }
    if (this.doingMagicInput()){
+     this.superAttack.meter += 4
     this.changeState(this.states.magic)
   }
   }
