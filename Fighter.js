@@ -221,6 +221,7 @@ hitClash(opponent, atkState){
             this.superAttack.sequence = []
             this.superAttack.nextInput = ""
             this.superAttack.doneSteps = 0
+            this.superAttack.durationTimer = 0.8
             this.changeState(this.states.superCombo)
           }
         }
@@ -466,6 +467,8 @@ hitClash(opponent, atkState){
   superUpdate = () => {
     this.superAttack.kickSpinDelay -= frameTime.secondsPassed
     
+    this.superAttack.durationTimer -= frameTime.secondsPassed
+    
     if (this.superAttack.kickSpinDelay < 0){
       this.hitStruck = false
       this.invertDirection()
@@ -476,9 +479,26 @@ hitClash(opponent, atkState){
       
       if (this.opponent.lost == false){
         this.opponent.changeState(this.opponent.states.hurtStand)
+        this.keepFightersClose(this.opponent)
+        this.opponent.hurtTimer = performance.now()
       }
-      this.keepFightersClose(this.opponent)
-      this.opponent.hurtTimer = performance.now()
+      
+      if (this.superAttack.durationTimer < 0){
+        this.superAttack.durationTimer = 0
+        this.superAttack.meter = 0
+        gravity = 4100
+        this.superAttack.secondPhase = false
+        this.changeState(this.states.gilete)
+       }
+    }
+    else {
+      if (this.superAttack.durationTimer < 0){
+        this.superAttack.durationTimer = 0
+        this.superAttack.meter = 0
+        gravity = 4100
+        this.superAttack.secondPhase = false
+        this.changeState(this.states.idle)
+      }
     }
   }
   
@@ -548,6 +568,7 @@ hitClash(opponent, atkState){
       if (this.superAttack.hitCount == 1){
         
         this.superAttack.freezeDelay = 0.6
+        this.superAttack.durationTimer = 0.9
         gravity = 0
         this.superAttack.secondPhase = true
         
@@ -563,6 +584,7 @@ hitClash(opponent, atkState){
         if (this.notLookingToOpponent()){ this.invertDirection() }
         this.changeState(this.states.gilete)
         this.superAttack.meter = -30
+        this.superAttack.durationTimer = 0
         this.superAttack.secondPhase = false
         //no fim do super combo antes do return, o hitStruck precisar ser false para permitir a gilete finalizadora
         this.hitStruck = false
@@ -827,6 +849,8 @@ export class SingleFighter extends VsFighter{
   superUpdate = () => {
     this.superAttack.kickSpinDelay -= frameTime.secondsPassed
     
+    this.superAttack.durationTimer -= frameTime.secondsPassed
+    
     if (this.superAttack.kickSpinDelay < 0){
       this.hitStruck = false
       this.invertDirection()
@@ -835,11 +859,11 @@ export class SingleFighter extends VsFighter{
     
     if (this.superAttack.hitCount > 0){
       
-      this.superAttack.durationTimer -= frameTime.secondsPassed
-      
       if (this.superAttack.durationTimer < 0){
         this.superAttack.durationTimer = 0
         gravity = 4100
+        this.superAttack.meter = 0
+        this.superAttack.secondPhase = false
         this.changeState(this.states.gilete)
         this.receivingSuper = undefined
         return
@@ -851,6 +875,14 @@ export class SingleFighter extends VsFighter{
   
       this.keepFightersClose(this.receivingSuper)
       this.receivingSuper.hurtTimer = performance.now()
+    }
+    else {
+      if (this.superAttack.durationTimer < 0){
+        this.superAttack.durationTimer = 0
+        this.superAttack.meter = 0
+        this.superAttack.secondPhase = false
+        this.changeState(this.states.idle)
+      }
     }
   }
   
@@ -1115,11 +1147,15 @@ export class VsModeBot extends VsFighter{
   }
   
   updateSuperHistory(){
+    if (this.superAttack.meter < 70){
+      return
+    }
+    
     if (!this.notOnGround()){
      const rndm = Math.floor(Math.random() * 500)
       if (rndm < 1){
         this.changeState(this.states.superCombo)
-        this.superAttack.meter = 0
+        this.superAttack.durationTimer = 0.8
       }
     }
   }
@@ -1278,7 +1314,11 @@ export class VsModeBot extends VsFighter{
     
     this.distanceXfromPlayer = Math.abs(this.positionX - this.opponent.positionX)
     
-    if (this.hardMode){
+    if (this.currentState == this.states.superCombo || this.opponent.superAttack.secondPhase == true){
+      return
+    }
+    
+    if (this.hardMode ){
       this.updateHardBehaviour()
       return
     } else {

@@ -56,6 +56,7 @@ export class LeftHudFighter extends VsFighter{
             this.superAttack.sequence = []
             this.superAttack.nextInput = ""
             this.superAttack.doneSteps = 0
+            this.superAttack.durationTimer = 0.8
             this.changeState(this.states.superCombo)
           }
         }
@@ -219,6 +220,7 @@ export class RightHudFighter extends VsFighter{
             this.superAttack.sequence = []
             this.superAttack.nextInput = ""
             this.superAttack.doneSteps = 0
+            this.superAttack.durationTimer = 0.8
             this.changeState(this.states.superCombo)
           }
         }

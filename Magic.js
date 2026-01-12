@@ -51,7 +51,11 @@ export class Magic{
       }
       
       opponent.hp -= damage
-      opponent.opponent.superAttack.meter += 15
+      
+      if (opponent.opponent.superAttack){
+        opponent.opponent.superAttack.meter += 15
+      }
+      
       if (opponent.hp <= 0){ 
         opponent.opponent.score += 1
         if (opponent.opponent.score > 100) {opponent.opponent.score = 100}
