@@ -91,16 +91,16 @@ export class LeftHudFighter extends VsFighter{
    else if (isMpButtonPressed(0) && !this.notOnGround()){
      this.changeState(this.states.jump)
    }
-   else if (isMpButtonPressed(4)){
+   else if (isMpButtonPressed(4) && this.attackDelay <= 0){
      this.changeState(this.states.punch)
    }
    //verifica gilete
-   else if (isMpButtonPressed(2) && isMpButtonPressed(5)){
+   else if (isMpButtonPressed(2) && isMpButtonPressed(5) && this.attackDelay <= 0){
      this.superAttack.meter += 4
      this.changeState(this.states.gilete)
    }
    
-   else if (isMpButtonPressed(5)){
+   else if (isMpButtonPressed(5) && this.attackDelay <= 0){
      this.changeState(this.states.kick)
    }     
  }
@@ -109,10 +109,10 @@ export class LeftHudFighter extends VsFighter{
      this.changeState(this.states.idle)
    }
    
-   if (isMpButtonPressed(4)){
+   if (isMpButtonPressed(4) && this.attackDelay <= 0){
      this.changeState(this.states.punch)
    }
-    if (isMpButtonPressed(5)){
+    if (isMpButtonPressed(5) && this.attackDelay <= 0){
      this.changeState(this.states.kick)
    }
    if (isMpButtonPressed(0) && !this.notOnGround()){
@@ -128,10 +128,10 @@ export class LeftHudFighter extends VsFighter{
     this.changeState(this.states.idle)
     }
     
-    if (isMpButtonPressed(4)){
+    if (isMpButtonPressed(4) && this.attackDelay <= 0){
      this.changeState(this.states.punch)
    }
-    if (isMpButtonPressed(5)){
+    if (isMpButtonPressed(5) && this.attackDelay <= 0){
      this.changeState(this.states.kick)
    }
    if (this.doingMagicInput()){
@@ -255,16 +255,16 @@ export class RightHudFighter extends VsFighter{
    else if (isMpButtonPressed(6) && !this.notOnGround()){
      this.changeState(this.states.jump)
    }
-   else if (isMpButtonPressed(10)){
+   else if (isMpButtonPressed(10) && this.attackDelay <= 0){
      this.changeState(this.states.punch)
    }
    //verifica gilete
-   else if (isMpButtonPressed(8) && isMpButtonPressed(11)){
+   else if (isMpButtonPressed(8) && isMpButtonPressed(11) && this.attackDelay <= 0){
      this.superAttack.meter += 4
      this.changeState(this.states.gilete)
    }
    
-   else if (isMpButtonPressed(11)){
+   else if (isMpButtonPressed(11) && this.attackDelay <= 0){
      this.changeState(this.states.kick)
    }     
  }
@@ -273,10 +273,10 @@ export class RightHudFighter extends VsFighter{
      this.changeState(this.states.idle)
    }
    
-   if (isMpButtonPressed(10)){
+   if (isMpButtonPressed(10) && this.attackDelay <= 0){
      this.changeState(this.states.punch)
    }
-    if (isMpButtonPressed(11)){
+    if (isMpButtonPressed(11) && this.attackDelay <= 0){
      this.changeState(this.states.kick)
    }
    if (isMpButtonPressed(6) && !this.notOnGround()){
@@ -292,10 +292,10 @@ export class RightHudFighter extends VsFighter{
     this.changeState(this.states.idle)
     }
     
-    if (isMpButtonPressed(10)){
+    if (isMpButtonPressed(10) && this.attackDelay <= 0){
      this.changeState(this.states.punch)
    }
-    if (isMpButtonPressed(11)){
+    if (isMpButtonPressed(11) && this.attackDelay <= 0){
      this.changeState(this.states.kick)
    }
    if (this.doingMagicInput()){

@@ -71,6 +71,8 @@ export class VsFighter extends BaseFighter {
     this.airTimer = 0.3
     this.currentAir = 0
     this.winDelay = 1
+    this.attackDelay = 0
+    
     if (blueMeter == null || fullMeter == null){
       blueMeter = this.context.createLinearGradient(480, 480, 480, 515)
       blueMeter.addColorStop(0, "cyan")
@@ -288,16 +290,16 @@ hitClash(opponent, atkState){
    else if (isButtonPressed(0) && !this.notOnGround()){
      this.changeState(this.states.jump)
    }
-   else if (isButtonPressed(4)){
+   else if (isButtonPressed(4) && this.attackDelay <= 0){
      this.changeState(this.states.punch)
    }
    //verifica gilete
-   else if (isButtonPressed(2) && isButtonPressed(5)){
+   else if (isButtonPressed(2) && isButtonPressed(5) && this.attackDelay <= 0){
      this.superAttack.meter += 4
      this.changeState(this.states.gilete)
    }
    
-   else if (isButtonPressed(5)){
+   else if (isButtonPressed(5) && this.attackDelay <= 0){
      this.changeState(this.states.kick)
    }
   }
@@ -310,10 +312,10 @@ hitClash(opponent, atkState){
      this.changeState(this.states.idle)
    }
    
-   if (isButtonPressed(4)){
+   if (isButtonPressed(4) && this.attackDelay <= 0){
      this.changeState(this.states.punch)
    }
-    if (isButtonPressed(5)){
+    if (isButtonPressed(5) && this.attackDelay <= 0){
      this.changeState(this.states.kick)
    }
    if (isButtonPressed(0) && !this.notOnGround()){
@@ -325,6 +327,7 @@ hitClash(opponent, atkState){
   }
   }
   punchInit = () => {
+    this.attackDelay = 0.5
     this.angle = 0
   if (!this.notOnGround()){
     Math.floor(this.velocityX /= 5)
@@ -337,6 +340,7 @@ hitClash(opponent, atkState){
   }
   kickInit = () => {
     this.angle = 0
+    this.attackDelay = 0.7
    if (!this.notOnGround()){
     Math.floor(this.velocityX /= 5)
    }
@@ -426,10 +430,10 @@ hitClash(opponent, atkState){
     this.changeState(this.states.idle)
     }
     
-    if (isButtonPressed(4)){
+    if (isButtonPressed(4) && this.attackDelay <= 0){
      this.changeState(this.states.punch)
    }
-    if (isButtonPressed(5)){
+    if (isButtonPressed(5) && this.attackDelay <= 0){
      this.changeState(this.states.kick)
    }
    if (this.doingMagicInput()){
@@ -441,6 +445,7 @@ hitClash(opponent, atkState){
   gileteInit = () => {
     this.hitStruck = false
     this.angle = 0
+    this.attackDelay = 1.1
     this.currentAir = 0
     this.airTimer = 0.1
     this.velocityY = -1200
@@ -753,6 +758,10 @@ hitClash(opponent, atkState){
     }
     else {
       this.lost = false
+    }
+    
+    if (this.attackDelay > 0){
+      this.attackDelay -= frameTime.secondsPassed
     }
     
     if (this.superAttack.meter >= 70){
