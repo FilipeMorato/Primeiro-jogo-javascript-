@@ -23,10 +23,9 @@ const context = canvas.getContext("2d")
         
         context.clearRect(0,0,canvas.width,canvas.height)
         
-      frameTime = {
-          secondsPassed : (time - frameTime.previous) / 1000,
-          previous : time
-      }  
+      frameTime.secondsPassed = (time - frameTime.previous) / 1000
+      frameTime.previous = time
+ 
         currentScene.update(frameTime)
         currentScene.draw()
     }
